@@ -30,7 +30,7 @@ import tools.shared as emscripten
 
 # TODO: -msse2, SIMD.js is complaint with SSE2
 
-emcc_args = '-O3 --llvm-lto 1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(' ')
+emcc_args = '-s LINKABLE=1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(' ')
 
 
 print
@@ -73,7 +73,7 @@ try:
         '-DBUILD_opencv_cudaarithm=OFF',
         '-DBUILD_opencv_cudabgsegm=OFF',
         '-DBUILD_opencv_cudacodec=OFF',
-        '-DBUILD_opencv_cudafeatures2d=ON',
+        '-DBUILD_opencv_cudafeatures2d=OFF',
         '-DBUILD_opencv_cudafilters=OFF',
         '-DBUILD_opencv_cudaimgproc=OFF',
         '-DBUILD_opencv_cudaoptflow=OFF',
@@ -91,11 +91,11 @@ try:
         '-DBUILD_opencv_gpuwarping=OFF',
         '-BUILD_opencv_hal=OFF',
         '-DBUILD_opencv_highgui=ON',
-        '-DBUILD_opencv_java=ON',
+        '-DBUILD_opencv_java=OFF',
         '-DBUILD_opencv_legacy=OFF',
         '-DBUILD_opencv_mat=ON',
         '-DBUILD_opencv_ml=ON',
-        '-DBUILD_opencv_nonfree=OFF',
+        '-DBUILD_opencv_nonfree=ON',
         '-DBUILD_opencv_optim=OFF',
         '-DBUILD_opencv_photo=ON',
         '-DBUILD_opencv_shape=ON',
@@ -152,20 +152,13 @@ try:
         '-DCMAKE_SHARED_LINKER_FLAGS_DEBUG=%s' % ' '.join(emcc_args),
         '..'
     ]
-
     emscripten.Building.configure(configuration)
 
 
     stage('Making OpenCV')
+    emscripten.Building.make(['make', '-j4'])
 
-    emcc_args += ('-s TOTAL_MEMORY=%d' % (128*1024*1024)).split(' ') # default 128MB.
-    emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
-    emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
-    emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
-
-    emscripten.Building.make(['make', '-j2'])
-
-    stage('Generating Includepaths')
+    stage('Compiling input file to .bc')
     INCLUDE_DIRS = [
         os.path.join('..', 'include'),
         os.path.join('..', 'build'),
@@ -193,12 +186,8 @@ try:
     emscripten.Building.emcc('../../../Desktop/ocvcppbc/ocv.cpp', emcc_binding_args, 'bound.bc')
     assert os.path.exists('bound.bc')
 
-    stage('Building OpenCV.html')
-    opencv = os.path.join('..', '..', 'build', 'cv.html')
-    data = os.path.join('..', '..', 'build', 'cv.data')
 
-    tests = os.path.join('..', '..', 'test')
-
+    stage('Linking input bitcode and static libraries')
     input_files = [
         'bound.bc',
         os.path.join('lib','libopencv_core.a'),
@@ -209,12 +198,10 @@ try:
         os.path.join('lib','libopencv_flann.a'),
         os.path.join('lib','libopencv_objdetect.a'),
         os.path.join('lib','libopencv_features2d.a') ,
-        os.path.join('lib','libopencv_highgui.a'),
 
         os.path.join('lib','libopencv_shape.a'),
         os.path.join('lib','libopencv_photo.a'),
         os.path.join('lib','libopencv_video.a'),
-        os.path.join('lib','libopencv_videoio.a'),
 
         # external libraries
         os.path.join('3rdparty', 'lib', 'liblibjpeg.a'),
@@ -223,45 +210,71 @@ try:
         #os.path.join('3rdparty', 'lib', 'liblibtiff.a'),
         #os.path.join('3rdparty', 'lib', 'liblibwebp.a'),
     ]
-    inputs = ''
-    for item in input_files:
-        print os.path.abspath(item)
+    # input_files = [
+    #     'bound.bc',
+    #     os.path.join('lib','libopencv_core.so.3.2.0'),
+    #     os.path.join('lib','libopencv_imgproc.so.3.2.0'),
+    #     os.path.join('lib','libopencv_imgcodecs.so.3.2.0'),
+    #
+    #     os.path.join('lib','libopencv_ml.so.3.2.0'),
+    #     os.path.join('lib','libopencv_flann.so.3.2.0'),
+    #     os.path.join('lib','libopencv_objdetect.so.3.2.0'),
+    #     os.path.join('lib','libopencv_features2d.so.3.2.0'),
+    #     os.path.join('lib','libopencv_highgui.so.3.2.0'),
+    #
+    #     os.path.join('lib','libopencv_shape.so.3.2.0'),
+    #     os.path.join('lib','libopencv_photo.so.3.2.0'),
+    #     os.path.join('lib','libopencv_video.so.3.2.0'),
+    #     os.path.join('lib','libopencv_videoio.so.3.2.0'),
+    #
+    #     # external libraries
+    #     os.path.join('3rdparty', 'lib', 'liblibjpeg.so.3.2.0'),
+    #     os.path.join('3rdparty', 'lib', 'liblibpng.so.3.2.0'),
+    #     os.path.join('3rdparty', 'lib', 'libzlib.so.3.2.0'),
+    #     # os.path.join('3rdparty', 'lib', 'liblibtiff.a'),
+    #     # os.path.join('3rdparty', 'lib', 'liblibwebp.a'),
+    # ]
+    # cool_items = []
+    # for item in input_files:
+    #     item_path = os.path.join('..', item.replace('.a', '.so.3.2.0'))
+    #     print item_path
+    #     if item == 'bound.bc':
+    #         continue
+    #     if not os.path.exists('temp'):
+    #         os.makedirs('temp')
+    #     os.chdir('temp')
+    #     Popen(['ar', '-x', os.path.join('..',  item)])
+    #     Popen(['gcc', '-shared', '*.o', '-o', item_path])
+    #     os.chdir('..')
+    #     print os.getcwd()
+    #     Popen(['rm', '-rf', 'temp'])
+    #     cool_items += os.path.join('lib', item_path)
+    # for item in cool_items:
+    #     print os.path.abspath(item)
 
     emscripten.Building.link(input_files, 'libOpenCV.bc')
-    print os.path.abspath('../../../Desktop/ocvcppbc')
+
+
+    stage('Building html...')
+    emcc_args += ('-s TOTAL_MEMORY=%d' % (128*1024*1024)).split(' ') # default 128MB.
+    emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
+    emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
+    emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
+    emcc_args += '-s DEMANGLE_SUPPORT=1'.split(' ')
+    emcc_args += '-s EMCC_DEBUG=1'.split(' ')
+    # emcc_args += '-s EXPORTED_FUNCTIONS="[`_main, _my_func`]"'.split(' ')
+
+    opencv = os.path.join('..', '..', 'build', 'cv.html')
+    data = os.path.join('..', '..', 'build', 'cv.data')
+    tests = os.path.join('..', '..', 'test')
+
     emcc_args += '--preload-file ../../../Desktop/ocvcppbc/image1.jpg@/'.split(' ')
 
     emscripten.Building.emcc('libOpenCV.bc', emcc_args, opencv)
-    stage('Wrapping')
-#    with open(opencv, 'r+b') as file:
-#        out = file.read()
-#        file.seek(0)
-#        # inspired by https://github.com/umdjs/umd/blob/95563fd6b46f06bda0af143ff67292e7f6ede6b7/templates/returnExportsGlobal.js
-#        file.write(("""
-#(function (root, factory) {
-#    if (typeof define === 'function' && define.amd) {
-#        // AMD. Register as an anonymous module.
-#        define(function () {
-#            return (root.cv = factory());
-#        });
-#    } else if (typeof module === 'object' && module.exports) {
-#        // Node. Does not work with strict CommonJS, but
-#        // only CommonJS-like environments that support module.exports,
-#        // like Node.
-#        module.exports = factory();
-#    } else {
-#        // Browser globals
-#        root.cv = factory();
-#    }
-#}(this, function () {
-#    %s
-#    return cv(Module);
-#}));
-#""" % (out,)).lstrip())
-#
-#    shutil.copy2(opencv, tests)
-    if os.path.exists(data):
-        shutil.copy2(data, tests)
+    #
+    # stage('Wrapping up')
+    # if os.path.exists(data):
+    #     shutil.copy2(data, tests)
 
 finally:
     os.chdir(this_dir)
