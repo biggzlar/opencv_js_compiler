@@ -15,15 +15,7 @@ except:
 sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
-# Settings
-'''
-          Settings.INLINING_LIMIT = 0
-          Settings.DOUBLE_MODE = 0
-          Settings.PRECISE_I64_MATH = 0
-          Settings.CORRECT_SIGNS = 0
-          Settings.CORRECT_OVERFLOWS = 0
-          Settings.CORRECT_ROUNDINGS = 0
-'''
+
 
 #TODO No Filesystem
 #emcc_args = sys.argv[1:] or '-O3 --llvm-lto 1 -s NO_EXIT_RUNTIME=1 -s ASSERTIOSN=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s NO_DYNAMIC_EXECUTION=0 --memory-init-file 0 -s NO_FILESYSTEM#=1 -s NO_BROWSER=1'.split(' ')
@@ -58,6 +50,7 @@ try:
     if not os.path.exists('build'):
         os.makedirs('build')
     os.chdir('build')
+    input_file_path = os.path.abspath(os.path.join(this_dir, sys.argv[1]))
 
     stage('OpenCV Configuration')
     configuration = [
@@ -154,7 +147,6 @@ try:
     ]
     emscripten.Building.configure(configuration)
 
-
     stage('Making OpenCV')
     emscripten.Building.make(['make', '-j4'])
 
@@ -181,15 +173,14 @@ try:
     for dir in INCLUDE_DIRS:
         print os.path.abspath(dir)
     include_dir_args = ['-I'+item for item in INCLUDE_DIRS]
-    emcc_binding_args = include_dir_args
-
-    emscripten.Building.emcc('../../../Desktop/ocvcppbc/ocv.cpp', emcc_binding_args, 'bound.bc')
-    assert os.path.exists('bound.bc')
+    emscripten.Building.emcc(input_file_path, include_dir_args + emcc_args, 'input.bc')
+    assert os.path.exists('input.bc')
 
 
     stage('Linking input bitcode and static libraries')
     input_files = [
-        'bound.bc',
+        'input.bc',
+        os.path.join('lib','libopencv_features2d.a') ,
         os.path.join('lib','libopencv_core.a'),
         os.path.join('lib','libopencv_imgproc.a'),
         os.path.join('lib','libopencv_imgcodecs.a'),
@@ -197,7 +188,6 @@ try:
         os.path.join('lib','libopencv_ml.a'),
         os.path.join('lib','libopencv_flann.a'),
         os.path.join('lib','libopencv_objdetect.a'),
-        os.path.join('lib','libopencv_features2d.a') ,
 
         os.path.join('lib','libopencv_shape.a'),
         os.path.join('lib','libopencv_photo.a'),
@@ -211,7 +201,7 @@ try:
         #os.path.join('3rdparty', 'lib', 'liblibwebp.a'),
     ]
     # input_files = [
-    #     'bound.bc',
+    #     'input.bc',
     #     os.path.join('lib','libopencv_core.so.3.2.0'),
     #     os.path.join('lib','libopencv_imgproc.so.3.2.0'),
     #     os.path.join('lib','libopencv_imgcodecs.so.3.2.0'),
@@ -238,7 +228,7 @@ try:
     # for item in input_files:
     #     item_path = os.path.join('..', item.replace('.a', '.so.3.2.0'))
     #     print item_path
-    #     if item == 'bound.bc':
+    #     if item == 'input.bc':
     #         continue
     #     if not os.path.exists('temp'):
     #         os.makedirs('temp')
@@ -252,7 +242,7 @@ try:
     # for item in cool_items:
     #     print os.path.abspath(item)
 
-    emscripten.Building.link(input_files, 'libOpenCV.bc')
+    emscripten.Building.link(input_files, 'linked_input.bc')
 
 
     stage('Building html...')
@@ -260,17 +250,15 @@ try:
     emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
     emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
-    emcc_args += '-s DEMANGLE_SUPPORT=1'.split(' ')
-    emcc_args += '-s EMCC_DEBUG=1'.split(' ')
     # emcc_args += '-s EXPORTED_FUNCTIONS="[`_main, _my_func`]"'.split(' ')
 
     opencv = os.path.join('..', '..', 'build', 'cv.html')
     data = os.path.join('..', '..', 'build', 'cv.data')
     tests = os.path.join('..', '..', 'test')
 
-    emcc_args += '--preload-file ../../../Desktop/ocvcppbc/image1.jpg@/'.split(' ')
+    emcc_args += '--preload-file ../../example/image1.jpg@/'.split(' ')
 
-    emscripten.Building.emcc('libOpenCV.bc', emcc_args, opencv)
+    emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
     #
     # stage('Wrapping up')
     # if os.path.exists(data):
