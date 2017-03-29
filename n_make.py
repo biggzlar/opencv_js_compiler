@@ -11,18 +11,10 @@ except:
     print "ERROR: Missing EMSCRIPTEN_ROOT (which should be equal to emscripten's root dir) in ~/.emscripten"
     sys.exit(1)
 
-#Popen('source ' + emenv)
 sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
-
-
-#TODO No Filesystem
-#emcc_args = sys.argv[1:] or '-O3 --llvm-lto 1 -s NO_EXIT_RUNTIME=1 -s ASSERTIOSN=1 -s AGGRESSIVE_VARIABLE_ELIMINATION=1 -s NO_DYNAMIC_EXECUTION=0 --memory-init-file 0 -s NO_FILESYSTEM#=1 -s NO_BROWSER=1'.split(' ')
-
-# TODO: -msse2, SIMD.js is complaint with SSE2
-
-emcc_args = '-s LINKABLE=1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(' ')
+emcc_args = '-O3 --llvm-lto 1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(' ')
 
 
 print
@@ -30,7 +22,6 @@ print '--------------------------------------------------'
 print 'Building opencv.js, build type:', emcc_args
 print '--------------------------------------------------'
 print
-
 
 stage_counter = 0
 def stage(text):
@@ -42,6 +33,16 @@ def stage(text):
     print text
     print '=' * len(text)
     print
+
+class bcolors:
+    OKGREEN = '\033[92m'
+    WARNING = '\033[93m'
+    ENDC = '\033[0m'
+
+def success(text):
+    if text == 'False':
+        return bcolors.WARNING + text + bcolors.ENDC
+    return bcolors.OKGREEN + text + bcolors.ENDC
 
 # Main
 try:
@@ -149,6 +150,7 @@ try:
 
     stage('Making OpenCV')
     emscripten.Building.make(['make', '-j4'])
+    print success('-> Done')
 
     stage('Compiling input file to .bc')
     INCLUDE_DIRS = [
@@ -170,16 +172,17 @@ try:
         os.path.join('..', 'modules', 'highgui', 'include'),
         os.path.join('..', 'modules', 'videoio', 'include')
     ]
+    print 'Include paths...'
     for dir in INCLUDE_DIRS:
-        print os.path.abspath(dir)
+        print '--', os.path.abspath(dir)
     include_dir_args = ['-I'+item for item in INCLUDE_DIRS]
     emscripten.Building.emcc(input_file_path, include_dir_args + emcc_args, 'input.bc')
     assert os.path.exists('input.bc')
+    print success('-> Done')
 
 
     stage('Linking input bitcode and static libraries')
     input_files = [
-        'input.bc',
         os.path.join('lib','libopencv_features2d.a') ,
         os.path.join('lib','libopencv_core.a'),
         os.path.join('lib','libopencv_imgproc.a'),
@@ -200,65 +203,35 @@ try:
         #os.path.join('3rdparty', 'lib', 'liblibtiff.a'),
         #os.path.join('3rdparty', 'lib', 'liblibwebp.a'),
     ]
-    # input_files = [
-    #     'input.bc',
-    #     os.path.join('lib','libopencv_core.so.3.2.0'),
-    #     os.path.join('lib','libopencv_imgproc.so.3.2.0'),
-    #     os.path.join('lib','libopencv_imgcodecs.so.3.2.0'),
-    #
-    #     os.path.join('lib','libopencv_ml.so.3.2.0'),
-    #     os.path.join('lib','libopencv_flann.so.3.2.0'),
-    #     os.path.join('lib','libopencv_objdetect.so.3.2.0'),
-    #     os.path.join('lib','libopencv_features2d.so.3.2.0'),
-    #     os.path.join('lib','libopencv_highgui.so.3.2.0'),
-    #
-    #     os.path.join('lib','libopencv_shape.so.3.2.0'),
-    #     os.path.join('lib','libopencv_photo.so.3.2.0'),
-    #     os.path.join('lib','libopencv_video.so.3.2.0'),
-    #     os.path.join('lib','libopencv_videoio.so.3.2.0'),
-    #
-    #     # external libraries
-    #     os.path.join('3rdparty', 'lib', 'liblibjpeg.so.3.2.0'),
-    #     os.path.join('3rdparty', 'lib', 'liblibpng.so.3.2.0'),
-    #     os.path.join('3rdparty', 'lib', 'libzlib.so.3.2.0'),
-    #     # os.path.join('3rdparty', 'lib', 'liblibtiff.a'),
-    #     # os.path.join('3rdparty', 'lib', 'liblibwebp.a'),
-    # ]
-    # cool_items = []
-    # for item in input_files:
-    #     item_path = os.path.join('..', item.replace('.a', '.so.3.2.0'))
-    #     print item_path
-    #     if item == 'input.bc':
-    #         continue
-    #     if not os.path.exists('temp'):
-    #         os.makedirs('temp')
-    #     os.chdir('temp')
-    #     Popen(['ar', '-x', os.path.join('..',  item)])
-    #     Popen(['gcc', '-shared', '*.o', '-o', item_path])
-    #     os.chdir('..')
-    #     print os.getcwd()
-    #     Popen(['rm', '-rf', 'temp'])
-    #     cool_items += os.path.join('lib', item_path)
-    # for item in cool_items:
-    #     print os.path.abspath(item)
-
-    emscripten.Building.link(input_files, 'linked_input.bc')
-
+    print 'Attempting to link library archives...'
+    for path in input_files:
+        print '--', os.path.basename(path)
+    link_flags = ['-Wl,--start-group'] + input_files + ['-Wl,--end-group']
+    emscripten.Building.emcc('input.bc', emcc_args + link_flags, 'linked_input.bc')
+    assert os.path.exists('linked_input.bc')
+    print success('-> Done')
 
     stage('Building html...')
     emcc_args += ('-s TOTAL_MEMORY=%d' % (128*1024*1024)).split(' ') # default 128MB.
     emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
     emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
-    # emcc_args += '-s EXPORTED_FUNCTIONS="[`_main, _my_func`]"'.split(' ')
 
     opencv = os.path.join('..', '..', 'build', 'cv.html')
-    data = os.path.join('..', '..', 'build', 'cv.data')
-    tests = os.path.join('..', '..', 'test')
 
     emcc_args += '--preload-file ../../example/image1.jpg@/'.split(' ')
 
     emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
+
+
+    stage('Report')
+    print 'js created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.js'))))
+    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.js')) / 1000000.0, 'mb', '\n'
+    print 'html created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.html'))))
+    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.html')) / 1000000.0, 'mb', '\n'
+    print 'data created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.data'))))
+    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.data')) / 1000000.0, 'mb', '\n'
+    print success('... success!')
     #
     # stage('Wrapping up')
     # if os.path.exists(data):
