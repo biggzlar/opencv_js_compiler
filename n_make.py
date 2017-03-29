@@ -40,8 +40,6 @@ class bcolors:
     ENDC = '\033[0m'
 
 def success(text):
-    if text == 'False':
-        return bcolors.WARNING + text + bcolors.ENDC
     return bcolors.OKGREEN + text + bcolors.ENDC
 
 # Main
@@ -153,7 +151,7 @@ try:
     print success('-> Done')
 
     stage('Compiling input file to .bc')
-    INCLUDE_DIRS = [
+    include_dirs = [
         os.path.join('..', 'include'),
         os.path.join('..', 'build'),
         os.path.join('..', 'modules', 'core', 'include', 'opencv', 'core'),
@@ -173,9 +171,9 @@ try:
         os.path.join('..', 'modules', 'videoio', 'include')
     ]
     print 'Include paths...'
-    for dir in INCLUDE_DIRS:
+    for dir in include_dirs:
         print '--', os.path.abspath(dir)
-    include_dir_args = ['-I'+item for item in INCLUDE_DIRS]
+    include_dir_args = ['-I'+item for item in include_dirs]
     emscripten.Building.emcc(input_file_path, include_dir_args + emcc_args, 'input.bc')
     assert os.path.exists('input.bc')
     print success('-> Done')
@@ -212,30 +210,29 @@ try:
     print success('-> Done')
 
     stage('Building html...')
+    if not os.path.exists('../../js_build'):
+        os.makedirs('../../js_build')
+    js_build_path = os.path.join('..', '..', 'js_build')
+
     emcc_args += ('-s TOTAL_MEMORY=%d' % (128*1024*1024)).split(' ') # default 128MB.
     emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
     emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
-
-    opencv = os.path.join('..', '..', 'build', 'cv.html')
-
     emcc_args += '--preload-file ../../example/image1.jpg@/'.split(' ')
+
+    opencv = os.path.join(js_build_path, 'cv.html')
 
     emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
 
 
     stage('Report')
-    print 'js created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.js'))))
-    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.js')) / 1000000.0, 'mb', '\n'
-    print 'html created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.html'))))
-    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.html')) / 1000000.0, 'mb', '\n'
-    print 'data created:', success(str(os.path.exists(os.path.join('..', '..', 'build', 'cv.data'))))
-    print os.path.getsize(os.path.join('..', '..', 'build', 'cv.data')) / 1000000.0, 'mb', '\n'
+    print 'js created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.js'))))
+    print os.path.getsize(os.path.join(js_build_path, 'cv.js')) / 1000000.0, 'mb', '\n'
+    print 'html created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.html'))))
+    print os.path.getsize(os.path.join(js_build_path, 'cv.html')) / 1000000.0, 'mb', '\n'
+    print 'data created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.data'))))
+    print os.path.getsize(os.path.join(js_build_path, 'cv.data')) / 1000000.0, 'mb', '\n'
     print success('... success!')
-    #
-    # stage('Wrapping up')
-    # if os.path.exists(data):
-    #     shutil.copy2(data, tests)
 
 finally:
     os.chdir(this_dir)
