@@ -1,5 +1,9 @@
 #!/usr/bin/python
-import os, sys, re, json, shutil
+import os
+import sys
+import re
+import json
+import shutil
 from subprocess import Popen, PIPE, STDOUT
 
 # Startup
@@ -14,7 +18,8 @@ except:
 sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
-emcc_args = '-O3 --llvm-lto 1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(' ')
+emcc_args = '-O3 --llvm-lto 1 -s ASSERTIONS=0 -s AGGRESSIVE_VARIABLE_ELIMINATION=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(
+    ' ')
 
 
 print
@@ -24,6 +29,8 @@ print '--------------------------------------------------'
 print
 
 stage_counter = 0
+
+
 def stage(text):
     global stage_counter
     stage_counter += 1
@@ -34,10 +41,12 @@ def stage(text):
     print '=' * len(text)
     print
 
+
 class bcolors:
     OKGREEN = '\033[92m'
     WARNING = '\033[93m'
     ENDC = '\033[0m'
+
 
 def success(text):
     return bcolors.OKGREEN + text + bcolors.ENDC
@@ -173,26 +182,26 @@ try:
     print 'Include paths...'
     for dir in include_dirs:
         print '--', os.path.abspath(dir)
-    include_dir_args = ['-I'+item for item in include_dirs]
-    emscripten.Building.emcc(input_file_path, include_dir_args + emcc_args, 'input.bc')
+    include_dir_args = ['-I' + item for item in include_dirs]
+    emscripten.Building.emcc(
+        input_file_path, include_dir_args + emcc_args, 'input.bc')
     assert os.path.exists('input.bc')
     print success('-> Done')
 
-
     stage('Linking input bitcode and static libraries')
     input_files = [
-        os.path.join('lib','libopencv_features2d.a') ,
-        os.path.join('lib','libopencv_core.a'),
-        os.path.join('lib','libopencv_imgproc.a'),
-        os.path.join('lib','libopencv_imgcodecs.a'),
+        os.path.join('lib', 'libopencv_features2d.a'),
+        os.path.join('lib', 'libopencv_core.a'),
+        os.path.join('lib', 'libopencv_imgproc.a'),
+        os.path.join('lib', 'libopencv_imgcodecs.a'),
 
-        os.path.join('lib','libopencv_ml.a'),
-        os.path.join('lib','libopencv_flann.a'),
-        os.path.join('lib','libopencv_objdetect.a'),
+        os.path.join('lib', 'libopencv_ml.a'),
+        os.path.join('lib', 'libopencv_flann.a'),
+        os.path.join('lib', 'libopencv_objdetect.a'),
 
-        os.path.join('lib','libopencv_shape.a'),
-        os.path.join('lib','libopencv_photo.a'),
-        os.path.join('lib','libopencv_video.a'),
+        os.path.join('lib', 'libopencv_shape.a'),
+        os.path.join('lib', 'libopencv_photo.a'),
+        os.path.join('lib', 'libopencv_video.a'),
 
         # external libraries
         os.path.join('3rdparty', 'lib', 'liblibjpeg.a'),
@@ -205,7 +214,8 @@ try:
     for path in input_files:
         print '--', os.path.basename(path)
     link_flags = ['-Wl,--start-group'] + input_files + ['-Wl,--end-group']
-    emscripten.Building.emcc('input.bc', emcc_args + link_flags, 'linked_input.bc')
+    emscripten.Building.emcc('input.bc', emcc_args +
+                             link_flags, 'linked_input.bc')
     assert os.path.exists('linked_input.bc')
     print success('-> Done')
 
@@ -214,7 +224,8 @@ try:
         os.makedirs('../../js_build')
     js_build_path = os.path.join('..', '..', 'js_build')
 
-    emcc_args += ('-s TOTAL_MEMORY=%d' % (128*1024*1024)).split(' ') # default 128MB.
+    # default 128MB.
+    emcc_args += ('-s TOTAL_MEMORY=%d' % (128 * 1024 * 1024)).split(' ')
     emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
     emcc_args += '-s EXPORT_NAME="cv"'.split(' ')
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
@@ -223,7 +234,6 @@ try:
     opencv = os.path.join(js_build_path, 'cv.html')
 
     emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
-
 
     stage('Report')
     print 'js created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.js'))))
