@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+		<title>OpenCV JS Binding - Image Processing Demo</title>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<style>
+			body {
+				font-family: Monospace;
+			}
+			#showcase {
+				position: absolute;
+				display: flex;
+				align-items: center;
+				height: 80%;
+				width: 80%;
+				margin: -100px 0 0 -500px;
+				top: 50%;
+				left: 50%;
+			}
+	        canvas{
+				background-color: #999999;
+			}
+			a {
+				color: #0040ff;
+			}
+		</style>
+	</head>
+	<body>
+		<a href='#' onclick='downloadCSV({ filename: "OpenCV_img_proc_results.csv" });'>Download CSV</a>
+		<a id="downloadLnk" download="YourFileName.jpg">Download processed images</a>
+		<div class="spinner" id='spinner'></div>
+    <div class="emscripten" id="status">Downloading...</div>
+    <div class="emscripten">
+      <progress value="0" max="100" id="progress" hidden=1></progress>
+    </div>
+
+		<div id="showcase">
+			<div>
+		    <canvas id="canvas1"></canvas>
+				<canvas id="canvas2"></canvas>
+			</div>
+			<input type="file" id="input" name="file" />
+		</div>
+
+		<script src='dat.gui.js'></script>
+		<script async src='cv.js'></script>
+		<script type='text/javascript'>
+			var Module = {};
+		</script>
+
+	  <script>
+			$('body').click(function(){
+				// makeGray();
+				Module.cool();
+			});
+			show_image = function(mat, canvas_id) {
+				var data = mat.data(); 	// output is a Uint8Array that aliases directly into the Emscripten heap
+
+				channels = mat.channels();
+				channelSize = mat.elemSize1();
+
+				var canvas = document.getElementById(canvas_id);
+
+				ctx = canvas.getContext("2d");
+				ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+				canvas.width = mat.cols;
+				canvas.height = mat.rows;
+
+				imdata = ctx.createImageData(mat.cols, mat.rows);
+
+				for (var i = 0,j=0; i < data.length; i += channels, j+=4) {
+					imdata.data[j] = data[i];
+					imdata.data[j + 1] = data[i+1%channels];
+					imdata.data[j + 2] = data[i+2%channels];
+					imdata.data[j + 3] = 255;
+				}
+				ctx.putImageData(imdata, 0, 0);
+			}
+	    function getInput() {
+	      var canvas = document.getElementById('canvas1');
+	      var ctx = canvas.getContext('2d');
+	      var imgData = ctx.getImageData(0,0,canvas.width, canvas.height);
+	      return imgData;
+	    }
+	    function makeGray(){
+	      var src = cv.matFromArray(getInput(), 24); // 24 for rgba
+	      var res = new cv.Mat();
+	      cv.cvtColor(src, res, cv.ColorConversionCodes.COLOR_RGBA2GRAY.value, 0 )
+	      show_image(res, "canvas2")
+	      src.delete();
+	      res.delete();
+	    }
+
+	    var inputElement = document.getElementById("input");
+			inputElement.addEventListener("change", handleFiles, false);
+			function handleFiles(e) {
+				var canvas = document.getElementById('canvas1');
+				var canvasWidth = 600 ;
+				var canvasHeight = 400 ;
+				var ctx = canvas.getContext('2d');
+				var url = URL.createObjectURL(e.target.files[0]);
+				var img = new Image();
+				img.onload = function() {
+				//ctx.drawImage(img, 20, 20);
+
+					var scaleFactor=Math.min((canvasWidth/img.width),(canvasHeight/img.height));
+					canvas.width = img.width*scaleFactor ;
+					canvas.height = img.height*scaleFactor ;
+					ctx.drawImage(img,0,0,img.width*scaleFactor,img.height*scaleFactor);
+				}
+				img.src = url;
+			}
+
+	    var container ;
+	    var Zee ;
+	    var Control =  {
+	      makeGray : makeGray,
+	    };
+
+	    function init() {
+	      container = document.createElement('div');
+	      document.body.appendChild(container);
+
+	      gui = new dat.GUI({autoPlace: false});
+	      document.body.appendChild(gui.domElement);
+	      gui.domElement.style.position = "absolute";
+	      gui.domElement.style.top = "0px";
+	      gui.domElement.style.right = "5px";
+
+	      //Color Space Changed
+	      var cSpaceFolder = gui.addFolder('Change Color Space');
+	      cSpaceFolder.add(Control,'makeGray');
+	      //cSpaceFolder.open();
+
+	    }
+	    init();
+		</script>
+  </body>
+</html>

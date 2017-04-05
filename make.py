@@ -163,18 +163,23 @@ try:
 
     stage('Generating Bindings')
     INCLUDE_DIRS = [
-             os.path.join('..', 'modules', 'core', 'include'),
-             os.path.join('..', 'modules', 'flann', 'include'),
-             os.path.join('..', 'modules', 'ml', 'include'),
-             os.path.join('..', 'modules', 'photo', 'include'),
-             os.path.join('..', 'modules', 'shape', 'include'),
-             os.path.join('..', 'modules', 'imgproc', 'include'),
-             os.path.join('..', 'modules', 'calib3d', 'include'),
-             os.path.join('..', 'modules', 'features2d', 'include'),
-             os.path.join('..', 'modules', 'video', 'include'),
-             os.path.join('..', 'modules', 'objdetect', 'include'),
-             os.path.join('..', 'modules', 'imgcodecs', 'include'),
-             os.path.join('..', 'modules', 'hal', 'include')
+        os.path.join('..', 'include'),
+        os.path.join('..', 'build'),
+        os.path.join('..', 'modules', 'core', 'include', 'opencv', 'core'),
+        os.path.join('..', 'modules', 'core', 'include'),
+        os.path.join('..', 'modules', 'flann', 'include'),
+        os.path.join('..', 'modules', 'ml', 'include'),
+        os.path.join('..', 'modules', 'photo', 'include'),
+        os.path.join('..', 'modules', 'shape', 'include'),
+        os.path.join('..', 'modules', 'imgproc', 'include'),
+        os.path.join('..', 'modules', 'calib3d', 'include'),
+        os.path.join('..', 'modules', 'features2d', 'include'),
+        os.path.join('..', 'modules', 'video', 'include'),
+        os.path.join('..', 'modules', 'objdetect', 'include'),
+        os.path.join('..', 'modules', 'imgcodecs', 'include'),
+        os.path.join('..', 'modules', 'hal', 'include'),
+        os.path.join('..', 'modules', 'highgui', 'include'),
+        os.path.join('..', 'modules', 'videoio', 'include')
     ]
     include_dir_args = ['-I'+item for item in INCLUDE_DIRS]
     emcc_binding_args = ['--bind']
