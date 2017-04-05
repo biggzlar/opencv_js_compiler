@@ -18,7 +18,7 @@ except:
 sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
-emcc_args = '--bind -s ASSERTIONS=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(
+emcc_args = '-O3 --llvm-lto 1 --bind -s ASSERTIONS=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(
     ' ')
 
 
@@ -160,7 +160,6 @@ try:
     stage('Compiling input file to .bc')
     emcc_args += ('-s TOTAL_MEMORY=%d' % (128 * 1024 * 1024)).split(' ')
     emcc_args += '-s ALLOW_MEMORY_GROWTH=1'.split(' ')  # resizable heap
-    # emcc_args += """-s EXPORTED_FUNCTIONS='["_cool"]'""".split(' ')
     include_dirs = [
         os.path.join('..', 'include'),
         os.path.join('..', 'build'),

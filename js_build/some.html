@@ -55,6 +55,12 @@
 			$('body').click(function(){
 				// makeGray();
 				Module.cool();
+				console.log(Module.cool());
+
+				var canvas = document.getElementById("canvas1");
+				var context = canvas.getContext("2d");
+				var data = context.getImageData(0,0,canvas.width,canvas.height);
+				console.log(data.data);
 			});
 			show_image = function(mat, canvas_id) {
 				var data = mat.data(); 	// output is a Uint8Array that aliases directly into the Emscripten heap

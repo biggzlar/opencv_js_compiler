@@ -41,6 +41,12 @@ int cool()
       //  return 0;
 }
 
+cv::Mat mat_stuff(int width, int height, const uint8_t* img_data){
+    auto img = cv::Mat(height, width, CV_8UC1, &img_data);
+    return img;
+}
+
 EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("cool", &cool);
+    emscripten::function("mat_stuff", &mat_stuff, emscripten::allow_raw_pointers());
 }
