@@ -13,40 +13,35 @@ using namespace std;
 
 int cool()
 {
-      cout << "something" << endl;
-      cv::Mat img = cv::imread("image1.jpg");
-
-      cout << "It does compile" << endl;
-      cout << img.rows << endl;
-      cout << img.cols << endl;
-      return img.rows;
-
-       //
-      //  Mat gray_image;
-      //  cvtColor( img, gray_image, CV_BGR2GRAY );
-      //  imwrite("../gray_image.jpg", gray_image);
-      //  IplImage opencvimg2 = (IplImage)gray_image;
-       //
-      //  // SimpleBlobDetector detector;
-      //  // Set up the detector with default parameters.
-       //
-      //  // Detect blobs.
-      //  vector<KeyPoint> keypoints;
-      //  Ptr<SimpleBlobDetector> ptrSBD = SimpleBlobDetector::create();
-      //  ptrSBD->detect(gray_image, keypoints);
-       //
-      //  cout << "We done!" << endl;
-      //  // for (vector<KeyPoint>::const_iterator i = keypoints.begin(); i != keypoints.end(); ++i)
-      //  // cout << (float)keypoints.at<float>(i, 0);
-      //  return 0;
+    cv::Mat img = cv::imread("image1.jpg");
+    cout << "It does compile" << endl;
+    cout << "Rows: " << img.rows << endl;
+    cout << "Columns: " << img.cols << endl;
+    return img.rows;
 }
 
-cv::Mat mat_stuff(int width, int height, const uint8_t* img_data){
-    auto img = cv::Mat(height, width, CV_8UC1, &img_data);
-    return img;
+uint8_t put_picture(){
+    cv::Mat img = cv::imread("image1.jpg");
+    cout << "type of img.data: " << typeid(img.data).name() << endl;
+    return *img.data;
+}
+
+string mat_stuff(int width, int height, string img_data){
+    std::vector<uint8_t> img_vector(img_data.begin(), img_data.end());
+    cv::Mat img = cv::Mat(height, width, CV_8UC1, &img_vector);
+
+    cv::SimpleBlobDetector detector;
+    // Detect blobs.
+    vector<cv::KeyPoint> keypoints;
+    cv::Ptr<cv::SimpleBlobDetector> ptrSBD =cv::SimpleBlobDetector::create();
+    ptrSBD->detect(img, keypoints);
+    cv::Mat im_with_keypoints;
+    drawKeypoints( img, keypoints, im_with_keypoints, cv::Scalar(0,0,255), cv::DrawMatchesFlags::DRAW_RICH_KEYPOINTS );
+    return img_data;
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("cool", &cool);
-    emscripten::function("mat_stuff", &mat_stuff, emscripten::allow_raw_pointers());
+    emscripten::function("mat_stuff", &mat_stuff);
+    emscripten::function("put_picture", &put_picture, emscripten::allow_raw_pointers());
 }

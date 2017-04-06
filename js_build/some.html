@@ -42,6 +42,7 @@
 		    <canvas id="canvas1"></canvas>
 				<canvas id="canvas2"></canvas>
 			</div>
+			<input type="button" id="function" value="c++ runner" onclick="cpp_test();" />
 			<input type="file" id="input" name="file" />
 		</div>
 
@@ -52,16 +53,28 @@
 		</script>
 
 	  <script>
-			$('body').click(function(){
-				// makeGray();
+			function cpp_test(){
 				Module.cool();
-				console.log(Module.cool());
+				console.log("put_picture returns *img.data: " + Module.put_picture());
 
 				var canvas = document.getElementById("canvas1");
 				var context = canvas.getContext("2d");
 				var data = context.getImageData(0,0,canvas.width,canvas.height);
-				console.log(data.data);
-			});
+				var imdata = context.createImageData(canvas.width, canvas.height);
+				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse("[" + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + "]");
+				console.log(new_data);
+				for (var i = 0, j = 0; i < new_data; i += 24, j +=4){
+					imdata.data[j] = new_data[i];
+					imdata.data[j + 1] = new_data[i+1%24];
+					imdata.data[j + 2] = new_data[i+2%24];
+					imdata.data[j + 3] = 255;
+				}
+				console.log(imdata.width);
+				console.log(imdata.height);
+				console.log(imdata.data);
+				//context.putImageData(imdata, 0, 0);
+			}
+
 			show_image = function(mat, canvas_id) {
 				var data = mat.data(); 	// output is a Uint8Array that aliases directly into the Emscripten heap
 
@@ -92,14 +105,6 @@
 	      var imgData = ctx.getImageData(0,0,canvas.width, canvas.height);
 	      return imgData;
 	    }
-	    function makeGray(){
-	      var src = cv.matFromArray(getInput(), 24); // 24 for rgba
-	      var res = new cv.Mat();
-	      cv.cvtColor(src, res, cv.ColorConversionCodes.COLOR_RGBA2GRAY.value, 0 )
-	      show_image(res, "canvas2")
-	      src.delete();
-	      res.delete();
-	    }
 
 	    var inputElement = document.getElementById("input");
 			inputElement.addEventListener("change", handleFiles, false);
@@ -120,30 +125,6 @@
 				}
 				img.src = url;
 			}
-
-	    var container ;
-	    var Zee ;
-	    var Control =  {
-	      makeGray : makeGray,
-	    };
-
-	    function init() {
-	      container = document.createElement('div');
-	      document.body.appendChild(container);
-
-	      gui = new dat.GUI({autoPlace: false});
-	      document.body.appendChild(gui.domElement);
-	      gui.domElement.style.position = "absolute";
-	      gui.domElement.style.top = "0px";
-	      gui.domElement.style.right = "5px";
-
-	      //Color Space Changed
-	      var cSpaceFolder = gui.addFolder('Change Color Space');
-	      cSpaceFolder.add(Control,'makeGray');
-	      //cSpaceFolder.open();
-
-	    }
-	    init();
 		</script>
   </body>
 </html>
