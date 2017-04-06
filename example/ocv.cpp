@@ -11,8 +11,7 @@
 
 using namespace std;
 
-int cool()
-{
+int cool(){
     cv::Mat img = cv::imread("image1.jpg");
     cout << "It does compile" << endl;
     cout << "Rows: " << img.rows << endl;

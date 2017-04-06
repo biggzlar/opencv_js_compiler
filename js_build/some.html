@@ -2,6 +2,7 @@
 <html lang="en">
 	<head>
     <script src="http://code.jquery.com/jquery-latest.min.js"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 		<title>OpenCV JS Binding - Image Processing Demo</title>
 		<meta charset="utf-8">
@@ -11,17 +12,15 @@
 				font-family: Monospace;
 			}
 			#showcase {
-				position: absolute;
+				margin: auto;
 				display: flex;
 				align-items: center;
-				height: 80%;
-				width: 80%;
-				margin: -100px 0 0 -500px;
-				top: 50%;
-				left: 50%;
 			}
-	        canvas{
-				background-color: #999999;
+	    canvas {
+				background-color: #F1F1F1;
+			}
+			#input-container {
+				margin: auto;
 			}
 			a {
 				color: #0040ff;
@@ -29,21 +28,33 @@
 		</style>
 	</head>
 	<body>
-		<a href='#' onclick='downloadCSV({ filename: "OpenCV_img_proc_results.csv" });'>Download CSV</a>
-		<a id="downloadLnk" download="YourFileName.jpg">Download processed images</a>
-		<div class="spinner" id='spinner'></div>
-    <div class="emscripten" id="status">Downloading...</div>
-    <div class="emscripten">
-      <progress value="0" max="100" id="progress" hidden=1></progress>
-    </div>
-
-		<div id="showcase">
-			<div>
-		    <canvas id="canvas1"></canvas>
-				<canvas id="canvas2"></canvas>
-			</div>
-			<input type="button" id="function" value="c++ runner" onclick="cpp_test();" />
-			<input type="file" id="input" name="file" />
+		<div id="wrapper">
+			<div class="row">
+				<div class="col-sm-4"></div>
+				<div class="col-sm-4">
+					<a href='#' onclick='downloadCSV({ filename: "OpenCV_img_proc_results.csv" });'>Download CSV</a>
+					<a id="downloadLnk" download="YourFileName.jpg">Download processed images</a>
+			    <div class="emscripten">
+			      <progress value="0" max="100" id="progress" hidden=1></progress>
+			    </div>
+				</div><!--col-8-->
+				<div class="col-sm-4"></div>
+			</div> <!--ROW-->
+			<div class="row">
+				<div id="input-container" class="col-sm-4">
+					<input type="file" id="input" name="file" />
+					<input type="button" id="function" value="c++ runner" onclick="cpp_test();" />
+				</div>
+				<div class="col-sm-4">
+					<div id="showcase">
+						<div>
+					    <canvas id="canvas1" width="600" height="400"></canvas>
+							<canvas id="canvas2" width="600" height="400"></canvas>
+						</div>
+					</div>
+				</div><!--col-8-->
+				<div class="col-sm-4"></div>
+			</div> <!--ROW-->
 		</div>
 
 		<script src='dat.gui.js'></script>
@@ -62,7 +73,7 @@
 				var data = context.getImageData(0,0,canvas.width,canvas.height);
 				var imdata = context.createImageData(canvas.width, canvas.height);
 				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse("[" + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + "]");
-				console.log(new_data);
+				console.log("new_data from Module.mat_stuff(): " + new_data);
 				for (var i = 0, j = 0; i < new_data; i += 24, j +=4){
 					imdata.data[j] = new_data[i];
 					imdata.data[j + 1] = new_data[i+1%24];
@@ -75,7 +86,7 @@
 				//context.putImageData(imdata, 0, 0);
 			}
 
-			show_image = function(mat, canvas_id) {
+			function show_image(mat, canvas_id) {
 				var data = mat.data(); 	// output is a Uint8Array that aliases directly into the Emscripten heap
 
 				channels = mat.channels();
