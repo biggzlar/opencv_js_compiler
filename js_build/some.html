@@ -74,16 +74,19 @@
 				var imdata = context.createImageData(canvas.width, canvas.height);
 				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse("[" + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + "]");
 				console.log("new_data from Module.mat_stuff(): " + new_data);
-				for (var i = 0, j = 0; i < new_data; i += 24, j +=4){
-					imdata.data[j] = new_data[i];
-					imdata.data[j + 1] = new_data[i+1%24];
-					imdata.data[j + 2] = new_data[i+2%24];
+				var _new_data = new_data.split(',').map(function(item) {
+				    return parseInt(item, 10);
+				});
+				for (var i = 0, j = 0; i < _new_data.length; i += 4, j +=4){
+					imdata.data[j] = _new_data[i];
+					imdata.data[j + 1] = _new_data[i+1%4];
+					imdata.data[j + 2] = _new_data[i+2%4];
 					imdata.data[j + 3] = 255;
 				}
 				console.log(imdata.width);
 				console.log(imdata.height);
 				console.log(imdata.data);
-				//context.putImageData(imdata, 0, 0);
+				context.putImageData(imdata, 0, 0);
 			}
 
 			function show_image(mat, canvas_id) {
