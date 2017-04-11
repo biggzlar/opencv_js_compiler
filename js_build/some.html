@@ -66,6 +66,7 @@
 	  <script>
 			function cpp_test(){
 				Module.cool();
+
 				console.log("put_picture returns *img.data: " + Module.put_picture());
 
 				var canvas = document.getElementById("canvas1");
@@ -73,7 +74,7 @@
 				var data = context.getImageData(0,0,canvas.width,canvas.height);
 				var imdata = context.createImageData(canvas.width, canvas.height);
 				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse("[" + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + "]");
-				console.log("new_data from Module.mat_stuff(): " + new_data);
+				// console.log("new_data from Module.mat_stuff(): " + new_data);
 				var _new_data = new_data.split(',').map(function(item) {
 				    return parseInt(item, 10);
 				});
@@ -83,10 +84,25 @@
 					imdata.data[j + 2] = _new_data[i+2%4];
 					imdata.data[j + 3] = 255;
 				}
-				console.log(imdata.width);
-				console.log(imdata.height);
-				console.log(imdata.data);
-				context.putImageData(imdata, 0, 0);
+				var canvas2 = document.getElementById("canvas2");
+				var context2 = canvas2.getContext("2d");
+				var data2 = context2.getImageData(0,0,canvas2.width, canvas2.height);
+				var imdata2 = context2.createImageData(canvas.width, canvas.height);
+				var new_data2 = Module.mat_to_array(imdata2.width, imdata2.height, String(data.data)).split(',').map(function(item){
+					return parseInt(item, 10);
+				});
+				for (var i = 0, j = 0; i < new_data2.length; i += 4, j +=4){
+					imdata2.data[j] = new_data2[i];
+					imdata2.data[j + 1] = new_data2[i+1%4];
+					imdata2.data[j + 2] = new_data2[i+2%4];
+					imdata2.data[j + 3] = 255;
+				}
+				context2.putImageData(imdata2, 0, 0);
+				// console.log(Module.mat_to_array(imdata.width, imdata.height, String(data.data)));
+				// console.log(imdata.width);
+				// console.log(imdata.height);
+				// console.log(imdata.data);
+				// context.putImageData(imdata, 0, 0);
 			}
 
 			function show_image(mat, canvas_id) {

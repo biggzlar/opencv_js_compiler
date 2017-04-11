@@ -18,7 +18,7 @@ except:
 sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
-emcc_args = '-O3 --llvm-lto 1 --bind -s ASSERTIONS=0 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(
+emcc_args = '-O3 --llvm-lto 1 --bind -s ASSERTIONS=0 --memory-init-file 0 -s NO_FILESYSTEM=0 -s ASSERTIONS=2'.split(
     ' ')
 
 
