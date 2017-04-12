@@ -38,18 +38,30 @@ string mat_to_array(int width, int height, string img_data){
   cout << "string passed to c++: " << img_data << endl;
   vector<uchar> img_vector(img_data.begin(), img_data.end());
 
-  cv::Mat img = cv::Mat(height, width, CV_8U, &img_vector);
+  cv::Mat img = cv::Mat(height, width, CV_8UC1, &img_vector);
   int img_arr[img.rows * (img.cols*img.channels())];
 
   uchar* p;
-  for (int i = 0; i < img.rows; ++i) {
-      p = *img.ptr<uchar*>(i);
-      for (int j = 0; j < img.cols*img.channels(); j+=1) {
-          img_arr[i * img.cols*img.channels() + j] = p[j];
-          // img_arr[i * img.cols*img.channels() + j + 1] = p[j + 1];
-          // img_arr[i * img.cols*img.channels() + j + 2] = p[j + 2];
-      }
-  }
+  cout << "sizeof:" << sizeof(**img.ptr<uchar*>()) << endl;
+  cout << typeid(*img.ptr<uchar*>(0,0)).name() << endl;
+
+  cout << "**: " << **img.ptr<uchar*>(1) << endl;
+  cout << "*: " << *img.ptr<uchar*>(0) << endl;
+
+  string sName(reinterpret_cast<char*>(*img.ptr<uchar*>(0)));
+  cout << sName << endl;
+
+  // cout << "dereference pointer: " << *img.ptr<uchar*>(0, 0) << endl;
+  // for (int i = 0; i < img.rows; ++i) {
+  //     p = *img.ptr<uchar*>(i);
+  //     for (int j = 0; j < img.cols*img.channels(); ++j) {
+  //         img_arr[i * img.cols*img.channels() + j] = p[j];
+  //         cout << p[j] << " ";
+  //         // img_arr[i * img.cols*img.channels() + j + 1] = p[j + 1];
+  //         // img_arr[i * img.cols*img.channels() + j + 2] = p[j + 2];
+  //     }
+  //     cout << endl;
+  // }
 
   cout << "passed img's rows: " << img.rows << endl;
   cout << "passed img's cols: " << img.cols << endl;
@@ -62,7 +74,7 @@ string mat_to_array(int width, int height, string img_data){
   // }
   cout << int_array_to_string(img_arr, sizeof(img_arr)) << endl;
   // string str(img_vector.begin(), img_vector.end());
-  return int_array_to_string(img_arr, sizeof(img_arr)); // str;
+  return sName; // str;
 }
 
 int* mat_array(const cv::Mat img) {
