@@ -1,12 +1,12 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang='en'>
 	<head>
-    <script src="http://code.jquery.com/jquery-latest.min.js"></script>
-		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
-		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <script src='http://code.jquery.com/jquery-latest.min.js'></script>
+		<link rel='stylesheet' href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css' integrity='sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u' crossorigin='anonymous'>
+		<meta http-equiv='Content-Type' content='text/html; charset=UTF-8'>
 		<title>OpenCV JS Binding - Image Processing Demo</title>
-		<meta charset="utf-8">
-		<meta name="viewport" content="width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0">
+		<meta charset='utf-8'>
+		<meta name='viewport' content='width=device-width, user-scalable=no, minimum-scale=1.0, maximum-scale=1.0'>
 		<style>
 			body {
 				font-family: Monospace;
@@ -28,32 +28,32 @@
 		</style>
 	</head>
 	<body>
-		<div id="wrapper">
-			<div class="row">
-				<div class="col-sm-4"></div>
-				<div class="col-sm-4">
-					<a href='#' onclick='downloadCSV({ filename: "OpenCV_img_proc_results.csv" });'>Download CSV</a>
-					<a id="downloadLnk" download="YourFileName.jpg">Download processed images</a>
-			    <div class="emscripten">
-			      <progress value="0" max="100" id="progress" hidden=1></progress>
+		<div id='wrapper'>
+			<div class='row'>
+				<div class='col-sm-4'></div>
+				<div class='col-sm-4'>
+					<a href='#' onclick='downloadCSV({ filename: 'OpenCV_img_proc_results.csv' });'>Download CSV</a>
+					<a id='downloadLnk' download='YourFileName.jpg'>Download processed images</a>
+			    <div class='emscripten'>
+			      <progress value='0' max='100' id='progress' hidden=1></progress>
 			    </div>
 				</div><!--col-8-->
-				<div class="col-sm-4"></div>
+				<div class='col-sm-4'></div>
 			</div> <!--ROW-->
-			<div class="row">
-				<div id="input-container" class="col-sm-4">
-					<input type="file" id="input" name="file" />
-					<input type="button" id="function" value="c++ runner" onclick="cpp_test();" />
+			<div class='row'>
+				<div id='input-container' class='col-sm-4'>
+					<input type='file' id='input' name='file' />
+					<input type='button' id='function' value='c++ runner' onclick='cpp_test();' />
 				</div>
-				<div class="col-sm-4">
-					<div id="showcase">
+				<div class='col-sm-4'>
+					<div id='showcase'>
 						<div>
-					    <canvas id="canvas1" width="600" height="400"></canvas>
-							<canvas id="canvas2" width="600" height="400"></canvas>
+					    <canvas id='canvas1' width='400' height='300'></canvas>
+							<canvas id='canvas2' width='400' height='300'></canvas>
 						</div>
 					</div>
 				</div><!--col-8-->
-				<div class="col-sm-4"></div>
+				<div class='col-sm-4'></div>
 			</div> <!--ROW-->
 		</div>
 
@@ -67,14 +67,14 @@
 			function cpp_test(){
 				Module.cool();
 
-				console.log("put_picture returns *img.data: " + Module.put_picture());
+				console.log('put_picture returns *img.data: ' + Module.put_picture());
 
-				var canvas = document.getElementById("canvas1");
-				var context = canvas.getContext("2d");
+				var canvas = document.getElementById('canvas1');
+				var context = canvas.getContext('2d');
 				var data = context.getImageData(0,0,canvas.width,canvas.height);
 				var imdata = context.createImageData(canvas.width, canvas.height);
-				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse("[" + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + "]");
-				// console.log("new_data from Module.mat_stuff(): " + new_data);
+				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse('[' + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + ']');
+				// console.log('new_data from Module.mat_stuff(): ' + new_data);
 				var _new_data = new_data.split(',').map(function(item) {
 				    return parseInt(item, 10);
 				});
@@ -84,10 +84,12 @@
 					imdata.data[j + 2] = _new_data[i+2%4];
 					imdata.data[j + 3] = 255;
 				}
-				var canvas2 = document.getElementById("canvas2");
-				var context2 = canvas2.getContext("2d");
-				var data2 = context2.getImageData(0,0,canvas2.width, canvas2.height);
-				var imdata2 = context2.createImageData(canvas.width, canvas.height);
+
+				var canvas2 = document.getElementById('canvas2');
+				var context2 = canvas2.getContext('2d');
+				var imdata2 = context2.createImageData(document.getElementById('canvas1').width, document.getElementById('canvas1').height);
+				canvas2.width = document.getElementById('canvas1').width;
+				canvas2.height = document.getElementById('canvas1').height;
 				var new_data2 = Module.mat_to_array(imdata2.width, imdata2.height, String(data.data)).split(',').map(function(item){
 					return parseInt(item, 10);
 				});
@@ -113,7 +115,7 @@
 
 				var canvas = document.getElementById(canvas_id);
 
-				ctx = canvas.getContext("2d");
+				ctx = canvas.getContext('2d');
 				ctx.clearRect(0, 0, canvas.width, canvas.height);
 
 				canvas.width = mat.cols;
@@ -136,8 +138,8 @@
 	      return imgData;
 	    }
 
-	    var inputElement = document.getElementById("input");
-			inputElement.addEventListener("change", handleFiles, false);
+	    var inputElement = document.getElementById('input');
+			inputElement.addEventListener('change', handleFiles, false);
 			function handleFiles(e) {
 				var canvas = document.getElementById('canvas1');
 				var canvasWidth = 600 ;

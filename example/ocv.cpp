@@ -27,32 +27,42 @@ uint8_t put_picture(){
 
 string int_array_to_string(int int_array[], int size_of_array) {
   string returnstring = "";
-  for (int temp = 0; temp < size_of_array; temp++)
+  for (int temp = 0; temp < size_of_array; temp++) {
     returnstring += to_string(int_array[temp]);
+    returnstring += ',';
+  }
   return returnstring;
 }
 
 string mat_to_array(int width, int height, string img_data){
   cout << "string passed to c++: " << img_data << endl;
-  vector<uint8_t> img_vector(img_data.begin(), img_data.end());
-  string str(img_vector.begin(), img_vector.end());
-  cout << "value after conversion: " << str << endl;
+  vector<uchar> img_vector(img_data.begin(), img_data.end());
 
-  cv::Mat img = cv::Mat(height, width, CV_8UC3, &img_vector);
+  cv::Mat img = cv::Mat(height, width, CV_8U, &img_vector);
   int img_arr[img.rows * (img.cols*img.channels())];
+
+  uchar* p;
+  for (int i = 0; i < img.rows; ++i) {
+      p = *img.ptr<uchar*>(i);
+      for (int j = 0; j < img.cols*img.channels(); j+=1) {
+          img_arr[i * img.cols*img.channels() + j] = p[j];
+          // img_arr[i * img.cols*img.channels() + j + 1] = p[j + 1];
+          // img_arr[i * img.cols*img.channels() + j + 2] = p[j + 2];
+      }
+  }
 
   cout << "passed img's rows: " << img.rows << endl;
   cout << "passed img's cols: " << img.cols << endl;
   cout << "passed img's channels: " << img.channels() << endl;
-
-  for(int i = 0; i < img.rows; i++){
-    for(int j = 0; j < img.cols; j++){
-      img_arr[j] = unsigned(img.data[i + j]);
-      cout << unsigned(img.data[((int)i*img.cols) + j]) << " ";
-    }
-    cout << endl;
-  }
-  return str;// int_array_to_string(img_arr, sizeof(img_arr));
+  cout << "is continuous: " << img.isContinuous() << endl;
+  // for(int i = 0; i < img.rows; i++) {
+  //   for(int j = 0; j < img.cols; j++) {
+  //     img_arr[(i * img.cols) + j] = (int)*img.at<uchar*>(i, j);
+  //   }
+  // }
+  cout << int_array_to_string(img_arr, sizeof(img_arr)) << endl;
+  // string str(img_vector.begin(), img_vector.end());
+  return int_array_to_string(img_arr, sizeof(img_arr)); // str;
 }
 
 int* mat_array(const cv::Mat img) {
