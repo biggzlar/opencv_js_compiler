@@ -65,15 +65,12 @@
 
 	  <script>
 			function cpp_test(){
-				Module.cool();
-
-				console.log('put_picture returns *img.data: ' + Module.put_picture());
-
+				// Module.main();
 				var canvas = document.getElementById('canvas1');
 				var context = canvas.getContext('2d');
 				var data = context.getImageData(0,0,canvas.width,canvas.height);
 				var imdata = context.createImageData(canvas.width, canvas.height);
-				var new_data = Module.mat_stuff(canvas.width, canvas.height, String(data.data));//JSON.parse('[' + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + ']');
+				var new_data = Module.mat_string(canvas.width, canvas.height, String(data.data));//JSON.parse('[' + Module.mat_stuff(canvas.width, canvas.height, String(data.data)) + ']');
 				// console.log('new_data from Module.mat_stuff(): ' + new_data);
 				var _new_data = new_data.split(',').map(function(item) {
 				    return parseInt(item, 10);
