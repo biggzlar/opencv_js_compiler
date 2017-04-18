@@ -11,15 +11,6 @@
 
 using namespace std;
 
-string int_array_to_string(int int_array[], int size_of_array) {
-  string returnstring = "";
-  for (int temp = 0; temp < size_of_array; temp++) {
-    returnstring += to_string(int_array[temp]);
-    returnstring += ',';
-  }
-  return returnstring;
-}
-
 string mat_to_array(int width, int height, string img_data){
   vector<uchar> img_vector(img_data.begin(), img_data.end());
   cv::Mat img = cv::Mat(height, width, CV_8UC3, &img_vector);
@@ -29,7 +20,7 @@ string mat_to_array(int width, int height, string img_data){
   cout << "TYPE: " << img.type() << endl;
   cout << "*img.ptr: " <<*img.ptr<uchar*>(0) << endl;
 
-  cv::Mat gray_image; // = cv::Mat(img.size(), img.type());
+  cv::Mat gray_image;
   if(img.empty()){
     cout << "MEH" << endl;
     return img_data;
@@ -86,6 +77,7 @@ std::vector<int> mat_vector(const cv::Mat img){
 }
 
 string vector_to_string(std::vector<int> img_vector){
+  //clumsy
   string returnstring = "";
   for(int i = 0; i < img_vector.size(); i++){
     returnstring += to_string(img_vector[i]);
@@ -94,22 +86,29 @@ string vector_to_string(std::vector<int> img_vector){
   return returnstring;
 }
 
+std::string v_to_s(const std::vector<int> img_vector) {
+  //this needs to be split by ' ' in js
+  std::stringstream result;
+  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, " "));
+  return result.str();
+}
+
 int main(){
-  cv::Mat img = cv::imread("image1.jpg");
+  cv::Mat img = cv::imread("Users/lbramlage/opencvjs/image1.jpg");
   cout << "It does compile" << endl;
   cout << "Rows: " << img.rows << endl;
   cout << "Columns: " << img.cols << endl;
   cout << "Channels: " << img.channels() << endl;
 
-  std::vector<int> img_array = mat_vector(img);
-  string whatup = vector_to_string(img_array);
-  cout << whatup << endl;
-  // cv::Mat weird_image =
+  // std::vector<int> img_array = mat_vector(img);
+  // string img_data_string = vector_to_string(img_array);
+  // cout << img_data_string << endl;
+
   cv::Mat gray_image;
   cvtColor(img, gray_image, cv::COLOR_BGR2GRAY);
 
-  cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-  cv::imshow( "Display window", gray_image );              // Show our image inside it.
+  cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
+  cv::imshow( "Display window", gray_image );
 
   cv::waitKey(0);
   return 0;
