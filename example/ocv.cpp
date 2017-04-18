@@ -11,12 +11,6 @@
 
 using namespace std;
 
-uint8_t put_picture(){
-    cv::Mat img = cv::imread("image1.jpg");
-    cout << "type of img.data: " << typeid(img.data).name() << endl;
-    return *img.data;
-}
-
 string int_array_to_string(int int_array[], int size_of_array) {
   string returnstring = "";
   for (int temp = 0; temp < size_of_array; temp++) {
@@ -29,44 +23,23 @@ string int_array_to_string(int int_array[], int size_of_array) {
 string mat_to_array(int width, int height, string img_data){
   vector<uchar> img_vector(img_data.begin(), img_data.end());
   cv::Mat img = cv::Mat(height, width, CV_8UC3, &img_vector);
-  // cv::Mat omg = cv::imread("image1.jpg");
 
-  cout << "CHANNELS: " << img.channels() << endl;
-  cout << "SIZE: " << img.size() << endl;
-  cout << "TYPE: " << img.type() << endl;
-  cout << "*img.ptr: " <<*img.ptr<uchar*>(0) << endl;
-
-  // cv::Mat gray_omage;
-  // cvtColor(omg, gray_omage, cv::COLOR_BGR2GRAY);
-
-  cv::Mat gray_image; // = cv::Mat(img.size(), img.type());
-  if(img.empty()){
-    cout << "MEH" << endl;
-    return img_data;
-  } else if (img.channels() > 1){
-    cout << "CVTCOLOR" << endl;
-    // cvtColor(img, gray_image, cv::COLOR_BGR2GRAY);
-    // blur(img, img, img.size());
-  } else {
-    cout << "FINALLY" << endl;
-    gray_image = img;
-  }
-
-  cout << "*img.ptr: " <<*img.ptr<uchar*>(0) << endl;
-  // string img_data_string(reinterpret_cast<char*>(*gray_image.ptr<uchar*>(0)));
-  // cout << img_data_string << endl;
-  // cout << gray_image.data << endl;
-
-  // cout << "dereference pointer: " << *img.ptr<uchar*>(0, 0) << endl;
-  // for (int i = 0; i < img.rows; ++i) {
-  //     p = *img.ptr<uchar*>(i);
-  //     for (int j = 0; j < img.cols*img.channels(); ++j) {
-  //         img_arr[i * img.cols*img.channels() + j] = p[j];
-  //         cout << p[j] << " ";
-  //         // img_arr[i * img.cols*img.channels() + j + 1] = p[j + 1];
-  //         // img_arr[i * img.cols*img.channels() + j + 2] = p[j + 2];
-  //     }
-  //     cout << endl;
+  // cout << "CHANNELS: " << img.channels() << endl;
+  // cout << "SIZE: " << img.size() << endl;
+  // cout << "TYPE: " << img.type() << endl;
+  cout << "*img.ptr: " << *img.ptr<uchar*>(0) << endl;
+  //
+  // cv::Mat gray_image;
+  // if(img.empty()){
+  //   cout << "MEH" << endl;
+  //   return img_data;
+  // } else if (img.channels() > 1){
+  //   cout << "CVTCOLOR" << endl;
+  //   // cvtColor(img, gray_image, cv::COLOR_BGR2GRAY);
+  //   // blur(img, img, img.size());
+  // } else {
+  //   cout << "FINALLY" << endl;
+  //   gray_image = img;
   // }
   return img_data; // str;
 }
@@ -101,12 +74,10 @@ string mat_to_string(cv::Mat img) {
 std::vector<int> mat_vector(const cv::Mat img){
   std::vector<int> input(img.cols * img.rows);
   cout << "SIZE OF INPUT: " << input.size() << endl;
-  for (int i = 0, j = 0; j < input.size() - 4; i += img.channels(), j +=4){
-    cout << j << endl;
+  for (int i = 0, j = 0; j < input.size() - 3; i += img.channels(), j +=3){
     input[j] = (int)img.data[i];
     input[j + 1] = (int)img.data[i+1%img.channels()];
     input[j + 2] = (int)img.data[i+2%img.channels()];
-    input[j + 3] = 255;
   }
   return input;
 }
@@ -121,39 +92,60 @@ string vector_to_string(std::vector<int> img_vector){
   return returnstring;
 }
 
-cv::Mat string_to_mat(const int height, const int width, const std::string img_data){
-  std:vector<uchar>img_vector( img_data.begin(), img_data.end());
-  return cv::Mat(height, width, CV_8UC3, &img_vector);
+cv::Mat string_to_mat(int height, int width, std::string img_data){
+  vector<uchar> img_vector(img_data.begin(), img_data.end());
+  cv::Mat img = cv::Mat(height, width, CV_8UC3, &img_vector);
+  return img;
 }
 
 std::string v_to_s(const std::vector<int> img_vector) {
   //this needs to be split by ' ' in js
   std::stringstream result;
-  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, " "));
-  return result.str();
+  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, ","));
+  return (result.str()).substr(0, (result.str()).size() - 1);
+}
+
+cv::Mat test_img(const int height, const int width) {
+  cv::Mat img = cv::Mat::zeros(height, width, CV_8UC3);
+  for(int i = 0; i < height; i++){
+    for(int j = 0; j < height; j++){
+      img.at<cv::Vec3b>(i, j)[2] = 255;
+    }
+  }
+  return img;
 }
 
 int main(){
-  cv::Mat img = cv::imread("image1.jpg");
+  cv::imwrite("other_test.jpg", test_img(20,20));
+  cv::Mat img = cv::imread("other_test.jpg");
+
   cout << "It does compile" << endl;
   cout << "Rows: " << img.rows << endl;
   cout << "Columns: " << img.cols << endl;
   cout << "Channels: " << img.channels() << endl;
+  // string s = mat_to_array(img.rows, img.cols, img_data_string);
 
-  std::vector<int> img_array = mat_vector(img);
-  string whatup = vector_to_string(img_array);
-  cout << whatup << endl;
-  // cv::Mat weird_image =
+  // img to vector
+  std::vector<int> img_vector = mat_vector(img);
+
+  // vector to string
+  string img_data_string = v_to_s(img_vector);
+
+  // string to mat
+  cv::Mat stringed_mat = string_to_mat(img.rows, img.cols, img_data_string);
+
+  // save mat to file
+  cv::imwrite("weird.jpg", stringed_mat);
+
   cv::Mat gray_image;
   cvtColor(img, gray_image, cv::COLOR_BGR2GRAY);
 
-  cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );// Create a window for display.
-  cv::imshow( "Display window", gray_image );              // Show our image inside it.
+  cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
+  cv::imshow( "Display window", stringed_mat );
 
   cv::waitKey(0);
   return 0;
 }
-
 
 //
 // EMSCRIPTEN_BINDINGS(my_module) {
