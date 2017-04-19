@@ -102,7 +102,7 @@ string type2str(int type) {
 
 int main(){
   cv::imwrite("img_in.jpg", test_img(100, 100));
-  cv::Mat img = cv::imread("_aaa.jpg", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+  cv::Mat img = cv::imread("img_in.jpg", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 
   cout << "Rows: " << img.rows << endl;
   cout << "Columns: " << img.cols << endl;
