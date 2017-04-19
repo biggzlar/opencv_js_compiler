@@ -11,15 +11,6 @@
 
 using namespace std;
 
-string int_array_to_string(int int_array[], int size_of_array) {
-  string returnstring = "";
-  for (int temp = 0; temp < size_of_array; temp++) {
-    returnstring += to_string(int_array[temp]);
-    returnstring += ',';
-  }
-  return returnstring;
-}
-
 string mat_to_array(int width, int height, string img_data){
   vector<uchar> img_vector;
   std::stringstream ss(img_data);
@@ -38,6 +29,7 @@ string mat_to_array(int width, int height, string img_data){
 }
 
 cv::Mat test_img(const int height, const int width) {
+  // creates a very simple cv::Mat for debugging
   cv::Mat img = cv::Mat::zeros(height, width, CV_8UC3);
   for(int i = 0; i < height; i++){
     for(int j = 0; j < height; j++){
@@ -48,6 +40,7 @@ cv::Mat test_img(const int height, const int width) {
 }
 
 std::vector<int> mat_vector(const cv::Mat img){
+  // converts the data member of a cv::Mat to a vector of integers
   std::vector<int> input(img.cols * img.rows * img.channels());
   cout << "SIZE OF INPUT: " << input.size() << endl;
   for (int i = 0, j = 0; j < input.size() - img.channels(); i += img.channels(), j += img.channels()){
@@ -59,6 +52,8 @@ std::vector<int> mat_vector(const cv::Mat img){
 }
 
 cv::Mat string_to_mat(int height, int width, std::string img_data){
+  // creates a cv::Mat from a string of BGR data, requires height and width of
+  // the output image
   vector<uchar> img_vector;
   std::stringstream ss(img_data);
 
@@ -69,23 +64,20 @@ cv::Mat string_to_mat(int height, int width, std::string img_data){
     if (ss.peek() == ',')
         ss.ignore();
   }
-  // for(int j = 0; j < img_vector.size(); j++){
-  //   cout << static_cast<unsigned>(img_vector[j]) << " ";
-  // }
-  cout << endl;
+
   cv::Mat img = cv::Mat(height, width, CV_8UC3, img_vector.data());
   return img;
 }
 
 std::string vector_to_string(const std::vector<int> img_vector) {
   // this needs to be split by ' ' in js
-  // it should be js compatible
   std::stringstream result;
   std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, ","));
   return (result.str()).substr(0, (result.str()).size() - 1);
 }
 
 string type2str(int type) {
+  // turns img.type() into a human-readable string
   string r;
 
   uchar depth = type & CV_MAT_DEPTH_MASK;
@@ -110,7 +102,7 @@ string type2str(int type) {
 
 int main(){
   cv::imwrite("img_in.jpg", test_img(100, 100));
-  cv::Mat img = cv::imread("image1.jpg", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
+  cv::Mat img = cv::imread("_aaa.jpg", CV_LOAD_IMAGE_ANYDEPTH | CV_LOAD_IMAGE_ANYCOLOR);
 
   cout << "Rows: " << img.rows << endl;
   cout << "Columns: " << img.cols << endl;
@@ -124,16 +116,14 @@ int main(){
   string img_data_string = vector_to_string(img_vector);
 
   // string to mat
-  cv::Mat processed_mat = string_to_mat(img.rows, img.cols, img_data_string);
+  cv::Mat string_mat = string_to_mat(img.rows, img.cols, img_data_string);
 
-  // save mat to file
-  cv::imwrite("img_out.jpg", processed_mat);
-
-  cv::Mat gray_image;
-  blur(processed_mat, gray_image, cv::Size(16,16));
+  cv::Mat processed_image;
+  blur(string_mat, processed_image, cv::Size(16,16));
+  cv::imwrite("img_out.jpg", processed_image);
 
   cv::namedWindow( "Display window", cv::WINDOW_AUTOSIZE );
-  cv::imshow( "Display window", gray_image );
+  cv::imshow( "Display window", processed_image );
 
   cv::waitKey(0);
   return 0;
