@@ -11,19 +11,23 @@
 			body {
 				font-family: Monospace;
 			}
+			input {
+				appearance: none;
+				-webkit-appearance: none;
+			}
+			a {
+				color: #0040ff;
+			}
+			canvas {
+				background-color: #F1F1F1;
+			}
 			#showcase {
 				margin: auto;
 				display: flex;
 				align-items: center;
 			}
-	    canvas {
-				background-color: #F1F1F1;
-			}
 			#input-container {
 				margin: auto;
-			}
-			a {
-				color: #0040ff;
 			}
 		</style>
 	</head>
@@ -43,7 +47,7 @@
 			<div class='row'>
 				<div id='input-container' class='col-sm-4'>
 					<input type='file' id='input' name='file' />
-					<input type='button' id='function' value='c++ runner' onclick='cpp_test();'/>
+					<input type='button' value='c++ runner' onclick='cpp_test();'/>
 				</div>
 				<div class='col-sm-4'>
 					<div id='showcase'>

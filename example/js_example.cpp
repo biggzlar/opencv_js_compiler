@@ -37,7 +37,7 @@ std::vector<int> mat_vector(const cv::Mat img){
 
   // this is where image data is submitted from context.createimagedata(), so it
   // probably, actually has 4 channels?
-  std::vector<int> input(img.cols * img.rows * img.channels());
+  std::vector<int> input(img.cols * img.rows * 4);
   // cout << "IMAGE COLS: " << img.cols << endl;
   // cout << "IMAGE ROWS: " << img.rows << endl;
   // cout << "IMAGE CHANNELS: " << img.channels() << endl;
@@ -45,10 +45,10 @@ std::vector<int> mat_vector(const cv::Mat img){
 
   // this will be the most difficult to get straight with the varying number of
   // channels
-  for (int i = 0, j = 0; j < input.size() - img.channels(); i += img.channels(), j += img.channels()){
+  for (int i = 0, j = 0; j < input.size() - 4; i += 4, j += 4){
     input[j] = (int)img.data[i];
-    input[j + 1] = (int)img.data[i+1%img.channels()];
-    input[j + 2] = (int)img.data[i+2%img.channels()];
+    input[j + 1] = (int)img.data[i+1%4];
+    input[j + 2] = (int)img.data[i+2%4];
     input[j + 3] = 255;
   }
   return input;
@@ -113,14 +113,14 @@ std::string eternal_return(int height, int width, std::string img_data) {
   cv::Mat processed_mat;
 
   blur(img, processed_mat, cv::Size(16,16));
-  // cvtColor(img, processed_mat, CV_BGR2GRAY);
-  // cvtColor(processed_mat, img, CV_GRAY2RGB);
+  // cvtColor(img, processed_mat, CV_RGBA2GRAY);
+  // cvtColor(processed_mat, img, CV_GRAY2RGBA);
   cout << "PROCESSED MAT" << endl;
   cout << "TYPE: " << type2str(processed_mat.type()) << endl;
   cout << "CHANNELS: " << processed_mat.channels() << endl;
 
   std::string mat_string = vector_to_string(mat_vector(processed_mat));
-  
+
   return mat_string;
 }
 
