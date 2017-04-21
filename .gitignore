@@ -4,3 +4,5 @@
 *.png
 *.gif
 cv.js
+cv.data
+dat.gui.js
