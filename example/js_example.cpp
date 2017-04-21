@@ -22,40 +22,8 @@ cv::Mat test_img(const int height, const int width) {
   return img;
 }
 
-std::string mat_to_js(const cv::Mat img) {
-  std::vector<int> img_vector(img.cols * img.rows * 4);
-
-  for (int i = 0, j = 0; j < img_vector.size() - 4; i += 4, j += 4){
-    img_vector[j]     = (int)img.data[i];
-    img_vector[j + 1] = (int)img.data[i+1%4];
-    img_vector[j + 2] = (int)img.data[i+2%4];
-    img_vector[j + 3] = 255;
-  }
-
-  std::stringstream result;
-  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, ","));
-  return (result.str()).substr(0, (result.str()).size() - 1);
-}
-
-cv::Mat string_to_mat(int height, int width, std::string img_data){
-  // splits up a ',' delimited string into a vector of unsigned chars, then
-  // attempts to create a cv::Mat from it
-  vector<uchar> img_vector;
-  std::stringstream ss(img_data);
-
-  int i;
-  while (ss >> i) {
-    img_vector.push_back(i);
-
-    if (ss.peek() == ',')
-        ss.ignore();
-  }
-
-  cv::Mat img = cv::Mat(height, width, CV_8UC4, img_vector.data());
-  return img;
-}
-
 string type2str(int type) {
+  // Returns a human readable string of the input image type
   string r;
 
   uchar depth = type & CV_MAT_DEPTH_MASK;
@@ -78,24 +46,79 @@ string type2str(int type) {
   return r;
 }
 
-std::string js_return(int height, int width, std::string img_data) {
-  cv::Mat img = string_to_mat(height, width, img_data);
-  cv::Mat processed_mat, final_destination;
+std::string mat_to_js_string(const cv::Mat img) {
+  // Casts the pixel data of a cv::Mat object to a vector of integers and returns
+  // a string representation of that vector
+  std::vector<int> img_vector(img.cols * img.rows * 4);
 
-  // blur(img, processed_mat, cv::Size(16,16));
+  for (int i = 0, j = 0; j < img_vector.size() - 4; i += 4, j += 4){
+    img_vector[j]     = (int)img.data[i];
+    img_vector[j + 1] = (int)img.data[i+1%4];
+    img_vector[j + 2] = (int)img.data[i+2%4];
+    img_vector[j + 3] = 255;
+  }
+
+  std::stringstream result;
+  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, ","));
+  return (result.str()).substr(0, (result.str()).size() - 1);
+}
+
+cv::Mat js_string_to_mat(int height, int width, std::string img_data){
+  // Splits up a ',' delimited string into a vector of unsigned chars, then
+  // creates a cv::Mat object from it, using the provided height and width
+  vector<uchar> img_vector;
+  std::stringstream ss(img_data);
+
+  int i;
+  while (ss >> i) {
+    img_vector.push_back(i);
+
+    if (ss.peek() == ',')
+        ss.ignore();
+  }
+
+  cv::Mat img = cv::Mat(height, width, CV_8UC4, img_vector.data());
+  return img;
+}
+
+void mat_info(const cv::Mat img) {
+  cout << "--- MAT INFO ---" << endl;
+  cout << "SIZE: " << img.cols << " * " << img.rows << endl;
+  cout << "TYPE: " << type2str(img.type()) << endl;
+  cout << "CHANNELS: " << img.channels() << endl;
+  cout << "---          ---" << endl;
+}
+
+std::string js_threshold(int height, int width, std::string img_data) {
+  cv::Mat img = js_string_to_mat(height, width, img_data);
+  cv::Mat processed_mat, final_mat;
+
   cvtColor(img, processed_mat, CV_RGBA2GRAY);
   cvtColor(processed_mat, processed_mat, CV_GRAY2RGBA);
-  threshold(processed_mat, final_destination, 97, 255, 0);
+  threshold(processed_mat, final_mat, 97, 255, 0);
 
-  cout << "PROCESSED MAT" << endl;
-  cout << "TYPE: " << type2str(processed_mat.type()) << endl;
-  cout << "CHANNELS: " << processed_mat.channels() << endl;
+  mat_info(final_mat);
 
-  std::string mat_string = mat_to_js(final_destination);
+  std::string mat_string = mat_to_js_string(final_mat);
 
   return mat_string;
 }
 
+std::string js_blur(int height, int width, std::string img_data) {
+  cv::Mat img = js_string_to_mat(height, width, img_data);
+  cv::Mat processed_mat;
+
+  blur(img, processed_mat, cv::Size(16, 16));
+
+  mat_info(processed_mat);
+
+  std::string mat_string = mat_to_js_string(processed_mat);
+
+  return mat_string;
+}
+
+
 EMSCRIPTEN_BINDINGS(my_module) {
-    emscripten::function("js_return", &js_return);
+    emscripten::function("js_blur", &js_blur);
+    emscripten::function("js_threshold", &js_threshold);
 }
