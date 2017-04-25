@@ -90,6 +90,7 @@
 				}
 				context2.putImageData(imdata2, 0, 0);
 			}
+
 			function opencv_blur(){
 				var canvas = document.getElementById('canvas1');
 				var context = canvas.getContext('2d');
@@ -126,11 +127,10 @@
 				var url = URL.createObjectURL(e.target.files[0]);
 				var img = new Image();
 				img.onload = function() {
-
 					var scaleFactor=Math.min((canvasWidth/img.width),(canvasHeight/img.height));
-					canvas.width = img.width*scaleFactor; //*scaleFactor
-					canvas.height = img.height*scaleFactor; //*scaleFactor
-					ctx.drawImage(img,0,0,img.width*scaleFactor,img.height*scaleFactor); //*scaleFactor *scaleFactor
+					canvas.width = img.width; //*scaleFactor
+					canvas.height = img.height; //*scaleFactor
+					ctx.drawImage(img,0,0,img.width,img.height); //*scaleFactor *scaleFactor
 				}
 				img.src = url;
 			}
