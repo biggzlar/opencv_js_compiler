@@ -50,7 +50,8 @@
 					<div id='input-container'>
 						<input type='file' id='input' name='file' /> <br>
 						<input type='button' value='threshold' onclick='opencv_threshold();' /> <br>
-						<input type='button' value='blur' onclick='opencv_blur();' />
+						<input type='button' value='blur' onclick='opencv_blur();' /><br>
+						<input type='button' value='range' onclick='opencv_range();' />
 					</div>
 				</div>
 				<div class='col-sm-4'>
@@ -102,6 +103,25 @@
 				canvas2.width = imdata2.width;
 				canvas2.height = imdata2.height;
 				var new_data2 = Module.js_blur(imdata2.height, imdata2.width, String(data.data)).split(',').map(function(item){
+					return parseInt(item, 10);
+				});
+				for (var i = 0; i < imdata2.data.length; i++){
+					imdata2.data[i] = new_data2[i];
+				}
+				context2.putImageData(imdata2, 0, 0);
+			}
+
+			function opencv_range(){
+				var canvas = document.getElementById('canvas1');
+				var context = canvas.getContext('2d');
+				var data = context.getImageData(0,0,canvas.width,canvas.height);
+
+				var canvas2 = document.getElementById('canvas2');
+				var context2 = canvas2.getContext('2d');
+				var imdata2 = context2.createImageData(document.getElementById('canvas1').width, document.getElementById('canvas1').height);
+				canvas2.width = imdata2.width;
+				canvas2.height = imdata2.height;
+				var new_data2 = Module.js_range(imdata2.height, imdata2.width, String(data.data)).split(',').map(function(item){
 					return parseInt(item, 10);
 				});
 				for (var i = 0; i < imdata2.data.length; i++){
