@@ -8,6 +8,7 @@
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
 #include <emscripten/bind.h>
+#include <emscripten.h>
 
 using namespace std;
 
@@ -132,8 +133,27 @@ std::string js_range(int height, int width, std::string img_data) {
   return mat_string;
 }
 
+void create_print() {
+  EM_ASM (
+    FS.createDataFile('/', 'file.txt', 'Hello qworld!', true, true);
+    var rawFile = new XMLHttpRequest();
+    rawFile.open("GET", 'file.txt', false);
+    rawFile.onreadystatechange = function ()
+    {
+        if(rawFile.readyState === 4)
+        {
+            if(rawFile.status === 200 || rawFile.status == 0)
+            {
+                console.log(rawFile.responseText);
+            }
+        }
+    }
+  );
+}
+
 
 EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("create_print", &create_print);
     emscripten::function("js_range", &js_range);
     emscripten::function("js_blur", &js_blur);
     emscripten::function("js_threshold", &js_threshold);

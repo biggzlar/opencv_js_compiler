@@ -19,7 +19,7 @@ sys.path.append(EMSCRIPTEN_ROOT)
 import tools.shared as emscripten
 
 # these options have been removed: -s EMULATE_FUNCTION_POINTER_CASTS=1 -s ALIASING_FUNCTION_POINTERS=0
-emcc_args = '-O3 --llvm-lto 1 --bind -s ASSERTIONS=2 --memory-init-file 0 -s NO_FILESYSTEM=0'.split(
+emcc_args = '-O3 --llvm-lto 1 --bind -s ASSERTIONS=2 --memory-init-file 0 -s FORCE_FILESYSTEM=1'.split(
     ' ')
 
 
