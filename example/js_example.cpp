@@ -100,7 +100,6 @@ std::string js_threshold(int height, int width, std::string img_data) {
   mat_info(final_mat);
 
   std::string mat_string = mat_to_js_string(final_mat);
-
   return mat_string;
 }
 
@@ -113,12 +112,29 @@ std::string js_blur(int height, int width, std::string img_data) {
   mat_info(processed_mat);
 
   std::string mat_string = mat_to_js_string(processed_mat);
+  return mat_string;
+}
 
+std::string js_range(int height, int width, std::string img_data) {
+  cv::Mat img = js_string_to_mat(height, width, img_data);
+  cv::Mat rgb_img, hsv_img, processed_mat;
+
+  cvtColor(img, rgb_img, CV_RGBA2RGB);
+  cvtColor(rgb_img, hsv_img, CV_RGB2HSV);
+
+  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(100, 255, 255), processed_mat);
+
+  cv::Mat output;
+  cvtColor(processed_mat, output, CV_GRAY2RGBA);
+  mat_info(output);
+
+  std::string mat_string = mat_to_js_string(output);
   return mat_string;
 }
 
 
 EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("js_range", &js_range);
     emscripten::function("js_blur", &js_blur);
     emscripten::function("js_threshold", &js_threshold);
 }
