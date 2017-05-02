@@ -132,7 +132,8 @@ string js_range(int height, int width, string img_data) {
   cv::addWeighted(lower_hue, 1.0, upper_hue, 1.0, 0.0, processed_mat);
 
   cv::Mat output;
-  cvtColor(processed_mat, output, CV_GRAY2RGBA);
+  img.copyTo(output, processed_mat);
+  // cvtColor(processed_mat, output, CV_GRAY2RGBA);
   mat_info(output);
 
   string mat_string = mat_to_js_string(output);
