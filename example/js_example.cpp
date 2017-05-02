@@ -41,7 +41,6 @@ string type2str(int type) {
     case CV_64F: r = "64F"; break;
     default:     r = "User"; break;
   }
-
   r += "C";
   r += (chans+'0');
 
@@ -84,6 +83,7 @@ cv::Mat js_string_to_mat(int height, int width, string img_data){
 }
 
 void mat_info(const cv::Mat img) {
+  // prints some mat info to the console
   cout << "--- MAT INFO ---" << endl;
   cout << "SIZE: " << img.cols << " * " << img.rows << endl;
   cout << "TYPE: " << type2str(img.type()) << endl;
@@ -92,6 +92,7 @@ void mat_info(const cv::Mat img) {
 }
 
 string js_threshold(int height, int width, string img_data) {
+  // returns a thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat, final_mat;
 
@@ -106,6 +107,7 @@ string js_threshold(int height, int width, string img_data) {
 }
 
 string js_blur(int height, int width, string img_data) {
+  // returns a blurred mt-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat;
 
@@ -118,13 +120,16 @@ string js_blur(int height, int width, string img_data) {
 }
 
 string js_range(int height, int width, string img_data) {
+  // returns a color thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
-  cv::Mat rgb_img, hsv_img, processed_mat;
+  cv::Mat rgb_img, hsv_img, processed_mat, lower_hue, upper_hue;
 
   cvtColor(img, rgb_img, CV_RGBA2RGB);
   cvtColor(rgb_img, hsv_img, CV_RGB2HSV);
 
-  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(100, 255, 255), processed_mat);
+  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(18, 255, 255), lower_hue);
+  cv::inRange(hsv_img, cv::Scalar(162, 100, 100), cv::Scalar(180, 255, 255), upper_hue);
+  cv::addWeighted(lower_hue, 1.0, upper_hue, 1.0, 0.0, processed_mat);
 
   cv::Mat output;
   cvtColor(processed_mat, output, CV_GRAY2RGBA);
@@ -135,6 +140,7 @@ string js_range(int height, int width, string img_data) {
 }
 
 void create_print() {
+  // writes a .txt file to the virtual filesystem, then reads it via c++
   EM_ASM (
     try {
       var rawFile = FS.open('file.txt');
