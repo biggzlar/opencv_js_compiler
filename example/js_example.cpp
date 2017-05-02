@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <stdio.h>
+#include <fstream>
 
 #include <opencv2/core/core.hpp>
 #include <opencv2/core/mat.hpp>
@@ -47,10 +48,10 @@ string type2str(int type) {
   return r;
 }
 
-std::string mat_to_js_string(const cv::Mat img) {
+string mat_to_js_string(const cv::Mat img) {
   // Casts the pixel data of a cv::Mat object to a vector of integers and returns
   // a string representation of that vector
-  std::vector<int> img_vector(img.cols * img.rows * 4);
+  vector<int> img_vector(img.cols * img.rows * 4);
 
   for (int i = 0, j = 0; j < img_vector.size() - 4; i += 4, j += 4){
     img_vector[j]     = (int)img.data[i];
@@ -59,16 +60,16 @@ std::string mat_to_js_string(const cv::Mat img) {
     img_vector[j + 3] = 255;
   }
 
-  std::stringstream result;
-  std::copy(img_vector.begin(), img_vector.end(), std::ostream_iterator<int>(result, ","));
+  stringstream result;
+  copy(img_vector.begin(), img_vector.end(), ostream_iterator<int>(result, ","));
   return (result.str()).substr(0, (result.str()).size() - 1);
 }
 
-cv::Mat js_string_to_mat(int height, int width, std::string img_data){
+cv::Mat js_string_to_mat(int height, int width, string img_data){
   // Splits up a ',' delimited string into a vector of unsigned chars, then
   // creates a cv::Mat object from it, using the provided height and width
   vector<uchar> img_vector;
-  std::stringstream ss(img_data);
+  stringstream ss(img_data);
 
   int i;
   while (ss >> i) {
@@ -90,7 +91,7 @@ void mat_info(const cv::Mat img) {
   cout << "---          ---" << endl;
 }
 
-std::string js_threshold(int height, int width, std::string img_data) {
+string js_threshold(int height, int width, string img_data) {
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat, final_mat;
 
@@ -100,11 +101,11 @@ std::string js_threshold(int height, int width, std::string img_data) {
 
   mat_info(final_mat);
 
-  std::string mat_string = mat_to_js_string(final_mat);
+  string mat_string = mat_to_js_string(final_mat);
   return mat_string;
 }
 
-std::string js_blur(int height, int width, std::string img_data) {
+string js_blur(int height, int width, string img_data) {
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat;
 
@@ -112,11 +113,11 @@ std::string js_blur(int height, int width, std::string img_data) {
 
   mat_info(processed_mat);
 
-  std::string mat_string = mat_to_js_string(processed_mat);
+  string mat_string = mat_to_js_string(processed_mat);
   return mat_string;
 }
 
-std::string js_range(int height, int width, std::string img_data) {
+string js_range(int height, int width, string img_data) {
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat rgb_img, hsv_img, processed_mat;
 
@@ -129,26 +130,32 @@ std::string js_range(int height, int width, std::string img_data) {
   cvtColor(processed_mat, output, CV_GRAY2RGBA);
   mat_info(output);
 
-  std::string mat_string = mat_to_js_string(output);
+  string mat_string = mat_to_js_string(output);
   return mat_string;
 }
 
 void create_print() {
   EM_ASM (
-    FS.createDataFile('/', 'file.txt', 'Hello qworld!', true, true);
-    var rawFile = new XMLHttpRequest();
-    rawFile.open("GET", 'file.txt', false);
-    rawFile.onreadystatechange = function ()
-    {
-        if(rawFile.readyState === 4)
-        {
-            if(rawFile.status === 200 || rawFile.status == 0)
-            {
-                console.log(rawFile.responseText);
-            }
-        }
+    try {
+      var rawFile = FS.open('file.txt');
+    } catch(err) {
+      FS.writeFile('/file.txt', 'Hello world! How are you doing today?');
+      var rawFile = FS.open('file.txt');
     }
   );
+
+  ifstream input_file;
+  input_file.open("file.txt");
+  string input;
+
+  while(!input_file.eof()) {
+    input_file >> input;
+    cout << input << ' ';
+  }
+
+  cout << endl;
+  input_file.close();
+
 }
 
 
