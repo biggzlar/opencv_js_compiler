@@ -140,19 +140,13 @@ string js_range(int height, int width, string img_data) {
   return mat_string;
 }
 
-void create_print() {
-  // writes a .txt file to the virtual filesystem, then reads it via c++
-  EM_ASM (
-    try {
-      var rawFile = FS.open('file.txt');
-    } catch(err) {
-      FS.writeFile('/file.txt', 'Hello world! How are you doing today?');
-      var rawFile = FS.open('file.txt');
-    }
-  );
+void save_to_idb() {
 
+}
+
+void cool_function() {
   ifstream input_file;
-  input_file.open("file.txt");
+  input_file.open("/persistent_dir/file.txt");
   string input;
 
   while(!input_file.eof()) {
@@ -163,10 +157,54 @@ void create_print() {
   cout << endl;
   input_file.close();
 
+  ofstream output_file;
+  output_file.open("/persistent_dir/file.txt", std::ios_base::app | std::ios_base::out);
+  output_file << "ᕕ( ᐛ )ᕗ \n";
+  output_file.close();
 }
 
 
+void create_print() {
+  // writes a .txt file to the virtual filesystem, then reads it via c++
+  EM_ASM (
+    try {
+      FS.open('/persistent_dir/file.txt');
+    } catch(e) {
+      console.log('I shouldnt be seeing this more than once.', e);
+      FS.writeFile('/persistent_dir/file.txt', 'Hello world! How are you doing today?');
+    }
+  );
+
+  cool_function();
+
+  EM_ASM (
+    Module.syncdone = 0;
+    FS.syncfs(false, function(err) {
+      console.log('DONE');
+      Module.syncdone = 1;
+    });
+  );
+}
+
+void initialize_idbfs() {
+  EM_ASM(
+    try {
+      FS.mkdir('/persistent_dir');
+    } catch(e) {
+    }
+    try {
+      FS.mount(IDBFS,{},'/persistent_dir');
+    } catch(e) {
+    }
+
+    FS.syncfs(true, function(err) {
+      console.log('DONE');
+    });
+  );
+}
+
 EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("initialize_idbfs", &initialize_idbfs);
     emscripten::function("create_print", &create_print);
     emscripten::function("js_range", &js_range);
     emscripten::function("js_blur", &js_blur);
