@@ -53,9 +53,9 @@
 						<input type='file' id='input' name='file' /><br>
 						<input id='photo_capture' type='button' value='capture' /><br><br>
 						<p>OpenCV Methods</p>
-						<input type='button' value='threshold' onclick='opencv_threshold();' /><br>
-						<input type='button' value='blur' onclick='opencv_blur();' /><br>
-						<input type='button' value='range' onclick='opencv_range();' /><br><br><br>
+						<input type='button' value='threshold' onclick='canvas_operation(Module.cv_threshold)' /><br>
+						<input type='button' value='blur' onclick='canvas_operation(Module.cv_blur);' /><br>
+						<input type='button' value='color range' onclick='canvas_operation(Module.cv_range);' /><br><br><br>
 						<p>Filesystem Commands</p>
 						<input type='button' value='initialize' onclick='Module.initialize_idbfs();' /><br>
 						<input type='button' value='append text' onclick='append_text()' /><input id='text_input' type='text' placeholder='ᕕ( ᐛ )ᕗ' /><br>
@@ -85,66 +85,31 @@
 		<script async src='cv.js'></script>
 
 	  <script>
-			function opencv_threshold(){
-				var canvas = document.getElementById('canvas1');
-				var context = canvas.getContext('2d');
-				var data = context.getImageData(0,0,canvas.width,canvas.height);
+			function canvas_operation(cv_image_operation) {
+				var src_canvas = document.getElementById('canvas1');
+				var src_context = src_canvas.getContext('2d');
+				var src_data = src_context.getImageData(0,0,src_canvas.width,src_canvas.height);
 
-				var canvas2 = document.getElementById('canvas2');
-				var context2 = canvas2.getContext('2d');
-				var imdata2 = context2.createImageData(document.getElementById('canvas1').width, document.getElementById('canvas1').height);
-				canvas2.width = imdata2.width;
-				canvas2.height = imdata2.height;
-				var new_data2 = Module.js_threshold(imdata2.height, imdata2.width, String(data.data)).split(',').map(function(item){
+				var dst_canvas = document.getElementById('canvas2');
+				var dst_context = dst_canvas.getContext('2d');
+				var dst_data = dst_context.createImageData(src_canvas.width, src_canvas.height);
+				dst_canvas.width = dst_data.width;
+				dst_canvas.height = dst_data.height;
+
+				var cv_data = cv_image_operation(dst_data.height, dst_data.width, String(src_data.data)).split(',').map(function(item){
 					return parseInt(item, 10);
 				});
-				for (var i = 0; i < imdata2.data.length; i++){
-					imdata2.data[i] = new_data2[i];
+
+				for (var i = 0; i < dst_data.data.length; i++){
+					dst_data.data[i] = cv_data[i];
 				}
-				context2.putImageData(imdata2, 0, 0);
-			}
 
-			function opencv_blur(){
-				var canvas = document.getElementById('canvas1');
-				var context = canvas.getContext('2d');
-				var data = context.getImageData(0,0,canvas.width,canvas.height);
-
-				var canvas2 = document.getElementById('canvas2');
-				var context2 = canvas2.getContext('2d');
-				var imdata2 = context2.createImageData(document.getElementById('canvas1').width, document.getElementById('canvas1').height);
-				canvas2.width = imdata2.width;
-				canvas2.height = imdata2.height;
-				var new_data2 = Module.js_blur(imdata2.height, imdata2.width, String(data.data)).split(',').map(function(item){
-					return parseInt(item, 10);
-				});
-				for (var i = 0; i < imdata2.data.length; i++){
-					imdata2.data[i] = new_data2[i];
-				}
-				context2.putImageData(imdata2, 0, 0);
-			}
-
-			function opencv_range(){
-				var canvas = document.getElementById('canvas1');
-				var context = canvas.getContext('2d');
-				var data = context.getImageData(0,0,canvas.width,canvas.height);
-
-				var canvas2 = document.getElementById('canvas2');
-				var context2 = canvas2.getContext('2d');
-				var imdata2 = context2.createImageData(document.getElementById('canvas1').width, document.getElementById('canvas1').height);
-				canvas2.width = imdata2.width;
-				canvas2.height = imdata2.height;
-				var new_data2 = Module.js_range(imdata2.height, imdata2.width, String(data.data)).split(',').map(function(item){
-					return parseInt(item, 10);
-				});
-				for (var i = 0; i < imdata2.data.length; i++){
-					imdata2.data[i] = new_data2[i];
-				}
-				context2.putImageData(imdata2, 0, 0);
+				dst_context.putImageData(dst_data, 0, 0);
 			}
 
 			function append_text() {
 				var text = $('#text_input').val();
-				Module.create_print("/persistent_dir/file.txt", text)
+				Module.process_appendix("/persistent_dir/file.txt", text)
 			}
 
 	    function getInput() {
@@ -171,6 +136,7 @@
 				}
 				img.src = url;
 			}
+
 			var video_capture = document.getElementById('video_frame');
 			var constraints = { video: { width:480, height:360 } };
 			navigator.mediaDevices.getUserMedia(constraints).then(function(stream){

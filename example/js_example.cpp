@@ -91,7 +91,7 @@ void mat_info(const cv::Mat img) {
   cout << "---          ---" << endl;
 }
 
-string js_threshold(int height, int width, string img_data) {
+string cv_threshold(int height, int width, string img_data) {
   // returns a thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat, final_mat;
@@ -106,7 +106,7 @@ string js_threshold(int height, int width, string img_data) {
   return mat_string;
 }
 
-string js_blur(int height, int width, string img_data) {
+string cv_blur(int height, int width, string img_data) {
   // returns a blurred mt-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat processed_mat;
@@ -119,7 +119,7 @@ string js_blur(int height, int width, string img_data) {
   return mat_string;
 }
 
-string js_range(int height, int width, string img_data) {
+string cv_range(int height, int width, string img_data) {
   // returns a color thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat rgb_img, hsv_img, processed_mat, lower_hue, upper_hue, mask;
@@ -211,8 +211,8 @@ void initialize_idbfs () {
 EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("print_file", &print_file);
     emscripten::function("initialize_idbfs", &initialize_idbfs);
-    emscripten::function("create_print", &create_print);
-    emscripten::function("js_range", &js_range);
-    emscripten::function("js_blur", &js_blur);
-    emscripten::function("js_threshold", &js_threshold);
+    emscripten::function("process_appendix", &create_print);
+    emscripten::function("cv_range", &cv_range);
+    emscripten::function("cv_blur", &cv_blur);
+    emscripten::function("cv_threshold", &cv_threshold);
 }
