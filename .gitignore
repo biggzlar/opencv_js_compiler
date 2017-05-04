@@ -3,7 +3,10 @@
 *.jpe
 *.png
 *.gif
+*.html
+!cpp_terminal.html
 cv.js
 cv.data
 dat.gui.js
+
 *.jar
