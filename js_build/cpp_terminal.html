@@ -43,17 +43,23 @@
 			      <progress value='0' max='100' id='progress' hidden=1></progress>
 			    </div>
 				</div><!--col-8-->
-				<div class='col-sm-4'></div>
+				<div class='col-sm-4'>
+				</div>
 			</div> <!--ROW-->
 			<div class='row'>
 				<div class='col-sm-4'>
 					<div id='input-container'>
-						<input type='file' id='input' name='file' /> <br>
-						<input type='button' value='threshold' onclick='opencv_threshold();' /><br><br>
-						<input type='button' value='blur' onclick='opencv_blur();' /><br><br>
-						<input type='button' value='range' onclick='opencv_range();' /><br><br>
-						<input type='button' value='em_asm' onclick='Module.create_print();' />
-						<input type='button' value='initialize' onclick='Module.initialize_idbfs();' />
+						<p>File Input</p>
+						<input type='file' id='input' name='file' /><br>
+						<input id='photo_capture' type='button' value='capture' /><br><br>
+						<p>OpenCV Methods</p>
+						<input type='button' value='threshold' onclick='opencv_threshold();' /><br>
+						<input type='button' value='blur' onclick='opencv_blur();' /><br>
+						<input type='button' value='range' onclick='opencv_range();' /><br><br><br>
+						<p>Filesystem Commands</p>
+						<input type='button' value='initialize' onclick='Module.initialize_idbfs();' /><br>
+						<input type='button' value='append text' onclick='append_text()' /><input id='text_input' type='text' placeholder='ᕕ( ᐛ )ᕗ' /><br>
+						<input type='button' value='print file' onclick='Module.print_file("/persistent_dir/file.txt");' />
 					</div>
 				</div>
 				<div class='col-sm-4'>
@@ -64,7 +70,9 @@
 						</div>
 					</div>
 				</div><!--col-8-->
-				<div class='col-sm-4'></div>
+				<div class='col-sm-4'>
+					<video id='video_frame' width='100%' height='100%' autoplay></video>
+				</div>
 			</div> <!--ROW-->
 		</div>
 
@@ -134,6 +142,11 @@
 				context2.putImageData(imdata2, 0, 0);
 			}
 
+			function append_text() {
+				var text = $('#text_input').val();
+				Module.create_print("/persistent_dir/file.txt", text)
+			}
+
 	    function getInput() {
 	      var canvas = document.getElementById('canvas1');
 	      var ctx = canvas.getContext('2d');
@@ -145,19 +158,36 @@
 			inputElement.addEventListener('change', handleFiles, false);
 			function handleFiles(e) {
 				var canvas = document.getElementById('canvas1');
-				var canvasWidth = 600 ;
-				var canvasHeight = 400 ;
+				var canvasWidth = 480 ;
+				var canvasHeight = 360 ;
 				var ctx = canvas.getContext('2d');
 				var url = URL.createObjectURL(e.target.files[0]);
 				var img = new Image();
 				img.onload = function() {
 					var scaleFactor=Math.min((canvasWidth/img.width),(canvasHeight/img.height));
-					canvas.width = img.width; //*scaleFactor
-					canvas.height = img.height; //*scaleFactor
-					ctx.drawImage(img,0,0,img.width,img.height); //*scaleFactor *scaleFactor
+					canvas.width = img.width *scaleFactor;
+					canvas.height = img.height *scaleFactor;
+					ctx.drawImage(img,0,0,img.width*scaleFactor,img.height*scaleFactor); //*scaleFactor *scaleFactor
 				}
 				img.src = url;
 			}
+			var video_capture = document.getElementById('video_frame');
+			var constraints = { video: { width:480, height:360 } };
+			navigator.mediaDevices.getUserMedia(constraints).then(function(stream){
+				video_capture.src = window.URL.createObjectURL(stream);
+			}).catch(function(error) {
+				console.log(error.message);
+			});
+
+			document.getElementById('photo_capture').addEventListener('click', function() {
+				var canvas = document.getElementById('canvas1');
+				var context = canvas.getContext('2d');
+				var video = $('#video_frame');
+
+				canvas.width =video.width();
+				canvas.height=video.height();
+				context.drawImage(video_capture, 0, 0, video.width(), video.height());
+			});
 		</script>
   </body>
 </html>

@@ -122,45 +122,51 @@ string js_blur(int height, int width, string img_data) {
 string js_range(int height, int width, string img_data) {
   // returns a color thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
-  cv::Mat rgb_img, hsv_img, processed_mat, lower_hue, upper_hue;
+  cv::Mat rgb_img, hsv_img, processed_mat, lower_hue, upper_hue, mask;
 
   cvtColor(img, rgb_img, CV_RGBA2RGB);
   cvtColor(rgb_img, hsv_img, CV_RGB2HSV);
 
-  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(30, 255, 255), lower_hue);
-  cv::inRange(hsv_img, cv::Scalar(150, 100, 100), cv::Scalar(180, 255, 255), upper_hue);
+  cv::inRange(hsv_img, cv::Scalar(0, 45, 120), cv::Scalar(30, 200, 255), lower_hue);
+  cv::inRange(hsv_img, cv::Scalar(150, 45, 120), cv::Scalar(180, 200, 255), upper_hue);
   cv::addWeighted(lower_hue, 1.0, upper_hue, 1.0, 0.0, processed_mat);
 
+  cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11,11));
+  cv::erode(processed_mat, mask, kernel);
+  cv::dilate(mask, mask, kernel);
+  // cvtColor(processed_mat, processed_rgba, CV_GRAY2RGBA);
+  // blur(processed_mat, mask, cv::Size(2, 2));
   cv::Mat output;
-  img.copyTo(output, processed_mat);
-  // cvtColor(processed_mat, output, CV_GRAY2RGBA);
+  img.copyTo(output, mask);
+
   mat_info(output);
 
   string mat_string = mat_to_js_string(output);
   return mat_string;
 }
 
-void cool_function() {
-  ifstream input_file;
-  input_file.open("/persistent_dir/file.txt");
-  string input;
+void print_file(string file_path) {
+    ifstream input_file;
+    input_file.open(file_path);
+    string input;
 
-  while(!input_file.eof()) {
-    input_file >> input;
-    cout << input << ' ';
-  }
+    while(!input_file.eof()) {
+      input_file >> input;
+      cout << input << ' ';
+    }
 
-  cout << endl;
-  input_file.close();
+    cout << endl;
+    input_file.close();
+}
 
+void text_append(string file_path, string text) {
   ofstream output_file;
-  output_file.open("/persistent_dir/file.txt", std::ios_base::app | std::ios_base::out);
-  output_file << "ᕕ( ᐛ )ᕗ \n";
+  output_file.open(file_path, std::ios_base::app | std::ios_base::out);
+  output_file << text << "\n";
   output_file.close();
 }
 
-
-void create_print() {
+void create_print(string file_path, string text) {
   // writes a .txt file to the virtual filesystem, then reads it via c++
   EM_ASM (
     try {
@@ -171,12 +177,13 @@ void create_print() {
     }
   );
 
-  cool_function();
+  text_append(file_path, text);
 
+  //  'push' our changes to the persistent source
   EM_ASM (
     Module.syncdone = 0;
     FS.syncfs(false, function(err) {
-      console.log('DONE');
+      console.log('Changes synced.');
       Module.syncdone = 1;
     });
   );
@@ -202,6 +209,7 @@ void initialize_idbfs () {
 }
 
 EMSCRIPTEN_BINDINGS(my_module) {
+    emscripten::function("print_file", &print_file);
     emscripten::function("initialize_idbfs", &initialize_idbfs);
     emscripten::function("create_print", &create_print);
     emscripten::function("js_range", &js_range);
