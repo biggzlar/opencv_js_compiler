@@ -127,8 +127,8 @@ string js_range(int height, int width, string img_data) {
   cvtColor(img, rgb_img, CV_RGBA2RGB);
   cvtColor(rgb_img, hsv_img, CV_RGB2HSV);
 
-  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(18, 255, 255), lower_hue);
-  cv::inRange(hsv_img, cv::Scalar(162, 100, 100), cv::Scalar(180, 255, 255), upper_hue);
+  cv::inRange(hsv_img, cv::Scalar(0, 100, 100), cv::Scalar(30, 255, 255), lower_hue);
+  cv::inRange(hsv_img, cv::Scalar(150, 100, 100), cv::Scalar(180, 255, 255), upper_hue);
   cv::addWeighted(lower_hue, 1.0, upper_hue, 1.0, 0.0, processed_mat);
 
   cv::Mat output;
@@ -138,10 +138,6 @@ string js_range(int height, int width, string img_data) {
 
   string mat_string = mat_to_js_string(output);
   return mat_string;
-}
-
-void save_to_idb() {
-
 }
 
 void cool_function() {
@@ -186,19 +182,21 @@ void create_print() {
   );
 }
 
-void initialize_idbfs() {
-  EM_ASM(
-    try {
-      FS.mkdir('/persistent_dir');
-    } catch(e) {
-    }
-    try {
-      FS.mount(IDBFS,{},'/persistent_dir');
-    } catch(e) {
-    }
+void initialize_idbfs () {
+  EM_ASM (
+  	// set up a directory
+    FS.mkdir('/persistent_dir');
 
+    // mount filesystem IDBFS at directory 'persistent_dir'
+  	FS.mount(IDBFS,{},'/persistent_dir');
+
+  	// first argument 'populate':
+  	// true = stored->current; // populates emscripten filesystem data with filesystem data from persistent source
+  	// false= current->stored; // store emscripten filesystem data at persistent source
+  	// true here to initialize our filesystem with the newly created folder
     FS.syncfs(true, function(err) {
-      console.log('DONE');
+  	   assert(!err);
+       console.log('IDBFS initialized.')
     });
   );
 }
@@ -210,25 +208,3 @@ EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("js_blur", &js_blur);
     emscripten::function("js_threshold", &js_threshold);
 }
-
-
-
-// void initialize_idbfs () {
-//   EM_ASM (
-//   	// set up a directory
-//       FS.mkdir('/persistent_dir');
-//
-//       // mount filesystem IDBFS at directory 'persistent_dir'
-//   	FS.mount(IDBFS,{},'/persistent_dir');
-//
-//   	// first argument 'populate':
-//   	// true = stored->current; // populates emscripten filesystem data with filesystem data from persistent source
-//   	// false= current->stored; // store emscripten filesystem data at persistent source
-//   	// true here to initialize our filesystem with the newly created folder
-//      	FS.syncfs(true, function(err) {
-//   		assert(!err);
-//      	});
-//
-//   	FS.writeFile('/file.txt', 'Hello world!');
-//   );
-// }
