@@ -134,13 +134,13 @@ string cv_range(int height, int width, string img_data) {
   cv::Mat kernel = cv::getStructuringElement(cv::MORPH_ELLIPSE, cv::Size(11,11));
   cv::erode(processed_mat, mask, kernel);
   cv::dilate(mask, mask, kernel);
+  blur(mask, mask, cv::Size(4, 4));
   // cvtColor(processed_mat, processed_rgba, CV_GRAY2RGBA);
-  // blur(processed_mat, mask, cv::Size(2, 2));
+
   cv::Mat output;
   img.copyTo(output, mask);
 
   mat_info(output);
-
   string mat_string = mat_to_js_string(output);
   return mat_string;
 }

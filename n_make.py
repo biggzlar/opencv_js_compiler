@@ -226,9 +226,7 @@ try:
         os.makedirs('../../js_build')
     js_build_path = os.path.join('..', '..', 'js_build')
 
-    # default 128MB.
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
-    emcc_args += '--preload-file ../../example/image1.jpg@/'.split(' ')
 
     opencv = os.path.join(js_build_path, 'cv.html')
     data = os.path.join('..', '..', 'build', 'cv.data')
