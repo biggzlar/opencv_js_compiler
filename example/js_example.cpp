@@ -210,3 +210,25 @@ EMSCRIPTEN_BINDINGS(my_module) {
     emscripten::function("js_blur", &js_blur);
     emscripten::function("js_threshold", &js_threshold);
 }
+
+
+
+// void initialize_idbfs () {
+//   EM_ASM (
+//   	// set up a directory
+//       FS.mkdir('/persistent_dir');
+//
+//       // mount filesystem IDBFS at directory 'persistent_dir'
+//   	FS.mount(IDBFS,{},'/persistent_dir');
+//
+//   	// first argument 'populate':
+//   	// true = stored->current; // populates emscripten filesystem data with filesystem data from persistent source
+//   	// false= current->stored; // store emscripten filesystem data at persistent source
+//   	// true here to initialize our filesystem with the newly created folder
+//      	FS.syncfs(true, function(err) {
+//   		assert(!err);
+//      	});
+//
+//   	FS.writeFile('/file.txt', 'Hello world!');
+//   );
+// }

@@ -154,8 +154,9 @@ try:
     emscripten.Building.configure(configuration)
 
     stage('Making OpenCV')
-    emcc_args += '-s EXPORT_NAME="cv" -s MODULARIZE=1'.split(' ')
+    # emcc_args += '-s EXPORT_NAME="cv" -s MODULARIZE=1'.split(' ')
     emscripten.Building.make(['make', '-j4'])
+
     print success('-> Done')
 
     stage('Compiling input file to .bc')
@@ -229,39 +230,12 @@ try:
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
     emcc_args += '--preload-file ../../example/image1.jpg@/'.split(' ')
 
-    opencv = os.path.join(js_build_path, 'cv.js')
+    opencv = os.path.join(js_build_path, 'cv.html')
     data = os.path.join('..', '..', 'build', 'cv.data')
 
     tests = os.path.join('..', '..', 'test')
 
     emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
-
-    stage('Wrapping')
-    with open(opencv, 'r+b') as file:
-        out = file.read()
-        file.seek(0)
-        # inspired by https://github.com/umdjs/umd/blob/95563fd6b46f06bda0af143ff67292e7f6ede6b7/templates/returnExportsGlobal.js
-        file.write(("""
-(function (root, factory) {
-    if (typeof define === 'function' && define.amd) {
-        // AMD. Register as an anonymous module.
-        define(function () {
-            return (root.cv = factory());
-        });
-    } else if (typeof module === 'object' && module.exports) {
-        // Node. Does not work with strict CommonJS, but
-        // only CommonJS-like environments that support module.exports,
-        // like Node.
-        module.exports = factory();
-    } else {
-        // Browser globals
-        root.cv = factory();
-    }
-}(this, function () {
-    %s
-    return cv(Module);
-}));
-""" % (out,)).lstrip())
 
     stage('Report')
     print 'js created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.js'))))

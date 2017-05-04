@@ -69,9 +69,12 @@
 		</div>
 
 		<script type='text/javascript'>
-			var Module = {};
+			var Module = {
+				preRun: [],
+        postRun: []
+			};
 		</script>
-		<script src='cv.js' async></script>
+		<script async src='cv.js'></script>
 
 	  <script>
 			function opencv_threshold(){
