@@ -38,7 +38,7 @@
 				<div class='col-sm-4'></div>
 				<div class='col-sm-4'>
 					<a href='#' onclick='downloadCSV({ filename: 'OpenCV_img_proc_results.csv' });'>Download CSV</a>
-					<a id='downloadLnk' download='YourFileName.jpg'>Download processed images</a>
+					<a id='downloadLnk' download='capture.jpg'>Download processed images</a>
 			    <div class='emscripten'>
 			      <progress value='0' max='100' id='progress' hidden=1></progress>
 			    </div>
@@ -85,6 +85,13 @@
 		<script async src='cv.js'></script>
 
 	  <script>
+			function download() {
+				var canvas = document.getElementById('canvas2');
+				var data = canvas.toDataURL('image/jpeg');
+				this.href = data;
+			};
+			downloadLnk.addEventListener('click', download, false);
+
 			function canvas_operation(cv_image_operation) {
 				var src_canvas = document.getElementById('canvas1');
 				var src_context = src_canvas.getContext('2d');

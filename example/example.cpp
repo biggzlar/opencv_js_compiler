@@ -68,14 +68,14 @@ cv::Mat js_string_to_mat(int height, int width, string img_data){
   // Splits up a ',' delimited string into a vector of unsigned chars, then
   // creates a cv::Mat object from it, using the provided height and width
   vector<uchar> img_vector;
-  stringstream ss(img_data);
+  stringstream string_stream(img_data);
 
   int i;
-  while (ss >> i) {
+  while (string_stream >> i) {
     img_vector.push_back(i);
 
-    if (ss.peek() == ',')
-        ss.ignore();
+    if (string_stream.peek() == ',')
+        string_stream.ignore();
   }
 
   cv::Mat img = cv::Mat(height, width, CV_8UC4, img_vector.data());
@@ -94,28 +94,26 @@ void mat_info(const cv::Mat img) {
 string cv_threshold(int height, int width, string img_data) {
   // returns a thresholded mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
-  cv::Mat processed_mat, final_mat;
+  cv::Mat processed_mat, output;
 
   cvtColor(img, processed_mat, CV_RGBA2GRAY);
   cvtColor(processed_mat, processed_mat, CV_GRAY2RGBA);
-  threshold(processed_mat, final_mat, 97, 255, 0);
+  threshold(processed_mat, output, 97, 255, 0);
 
-  mat_info(final_mat);
-
-  string mat_string = mat_to_js_string(final_mat);
+  mat_info(output);
+  string mat_string = mat_to_js_string(output);
   return mat_string;
 }
 
 string cv_blur(int height, int width, string img_data) {
   // returns a blurred mt-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
-  cv::Mat processed_mat;
+  cv::Mat output;
 
-  blur(img, processed_mat, cv::Size(16, 16));
+  blur(img, output, cv::Size(16, 16));
 
-  mat_info(processed_mat);
-
-  string mat_string = mat_to_js_string(processed_mat);
+  mat_info(output);
+  string mat_string = mat_to_js_string(output);
   return mat_string;
 }
 
@@ -159,13 +157,6 @@ void print_file(string file_path) {
     input_file.close();
 }
 
-void text_append(string file_path, string text) {
-  ofstream output_file;
-  output_file.open(file_path, std::ios_base::app | std::ios_base::out);
-  output_file << text << "\n";
-  output_file.close();
-}
-
 void create_print(string file_path, string text) {
   // writes a .txt file to the virtual filesystem, then reads it via c++
   EM_ASM (
@@ -173,11 +164,14 @@ void create_print(string file_path, string text) {
       FS.open('/persistent_dir/file.txt');
     } catch(e) {
       console.log('I shouldnt be seeing this more than once.', e);
-      FS.writeFile('/persistent_dir/file.txt', 'Hello world! How are you doing today?');
+      FS.writeFile('/persistent_dir/file.txt', 'Hello world! ');
     }
   );
 
-  text_append(file_path, text);
+  ofstream output_file;
+  output_file.open(file_path, std::ios_base::app | std::ios_base::out);
+  output_file << ' ' << text;
+  output_file.close();
 
   //  'push' our changes to the persistent source
   EM_ASM (
