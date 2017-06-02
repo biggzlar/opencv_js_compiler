@@ -4,7 +4,7 @@
 1. Get the source code
 
   ```
-  git clone https://github.com/ucisysarch/opencv_js_compiler.git
+  git clone https://github.com/biggzlar/opencv_js_compiler.git
   cd opencvjs
   git clone https://github.com/opencv/opencv
   cd opencv
@@ -18,12 +18,7 @@
   ./emsdk activate sdk-master-64bit
   source ./emsdk_env.sh
   ```
-3. Rebuild emscripten
-  ```
-  ./emsdk install sdk-master-64bit --shallow
-  ```
-
-4. Compile OpenCV and generate bindings by executing n_make.py script.
+3. Compile OpenCV and generate bindings by executing n_make.py script.
 
   ```
     python n_make.py input.cpp
