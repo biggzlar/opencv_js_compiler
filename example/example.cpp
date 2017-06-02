@@ -106,7 +106,7 @@ string cv_threshold(int height, int width, string img_data) {
 }
 
 string cv_blur(int height, int width, string img_data) {
-  // returns a blurred mt-string
+  // returns a blurred mat-string
   cv::Mat img = js_string_to_mat(height, width, img_data);
   cv::Mat output;
 

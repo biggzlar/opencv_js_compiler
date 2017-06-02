@@ -23,7 +23,7 @@
   ./emsdk install sdk-master-64bit --shallow
   ```
 
-4. Compile OpenCV and generate bindings by executing make.py script.
+4. Compile OpenCV and generate bindings by executing n_make.py script.
 
   ```
     python n_make.py input.cpp

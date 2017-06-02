@@ -222,9 +222,9 @@ try:
     print success('-> Done')
 
     stage('Building html...')
-    if not os.path.exists('../../js_build'):
-        os.makedirs('../../js_build')
-    js_build_path = os.path.join('..', '..', 'js_build')
+    if not os.path.exists('../../web_build'):
+        os.makedirs('../../web_build')
+    js_build_path = os.path.join('..', '..', 'web_build')
 
     emcc_args += '-s DISABLE_EXCEPTION_CATCHING=0'.split(' ')
 
