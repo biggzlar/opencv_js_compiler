@@ -1,12 +1,14 @@
-# opencv to javascript compiler
+# opencv project to javascript compiler
+
+Forked from [opencvjs](https://github.com/ucisysarch/opencvjs).
 
 ### How to Build
 1. Get the source code
 
   ```
   git clone https://github.com/biggzlar/opencv_js_compiler.git
-  cd opencvjs
-  git clone https://github.com/opencv/opencv 
+  cd opencv_js_compiler
+  git clone https://github.com/opencv/opencv
   ```
 2. Install emscripten. You can obtain emscripten by using [Emscripten SDK](https://kripken.github.io/emscripten-site/docs/getting_started/downloads.html).
 
@@ -16,8 +18,12 @@
   ./emsdk activate latest
   source ./emsdk_env.sh
   ```
-3. Compile OpenCV and generate bindings by executing n_make.py script.
+3. Compile OpenCV and your source file.
 
   ```
-    python n_make.py input.cpp
+    python n_make.py example/example.cpp
   ```
+
+### ToDos:
+* Skip the building of OpenCV once it has already been built or allow path specification?
+* Allow for multiple input files.
