@@ -143,69 +143,7 @@ string cv_range(int height, int width, string img_data) {
   return mat_string;
 }
 
-void print_file(string file_path) {
-    ifstream input_file;
-    input_file.open(file_path);
-    string input;
-
-    while(!input_file.eof()) {
-      input_file >> input;
-      cout << input << ' ';
-    }
-
-    cout << endl;
-    input_file.close();
-}
-
-void create_print(string file_path, string text) {
-  // writes a .txt file to the virtual filesystem, then reads it via c++
-  EM_ASM (
-    try {
-      FS.open('/persistent_dir/file.txt');
-    } catch(e) {
-      console.log('I shouldnt be seeing this more than once.', e);
-      FS.writeFile('/persistent_dir/file.txt', 'Hello world! ');
-    }
-  );
-
-  ofstream output_file;
-  output_file.open(file_path, std::ios_base::app | std::ios_base::out);
-  output_file << ' ' << text;
-  output_file.close();
-
-  //  'push' our changes to the persistent source
-  EM_ASM (
-    Module.syncdone = 0;
-    FS.syncfs(false, function(err) {
-      console.log('Changes synced.');
-      Module.syncdone = 1;
-    });
-  );
-}
-
-void initialize_idbfs () {
-  EM_ASM (
-  	// set up a directory
-    FS.mkdir('/persistent_dir');
-
-    // mount filesystem IDBFS at directory 'persistent_dir'
-  	FS.mount(IDBFS,{},'/persistent_dir');
-
-  	// first argument 'populate':
-  	// true = stored->current; // populates emscripten filesystem data with filesystem data from persistent source
-  	// false= current->stored; // store emscripten filesystem data at persistent source
-  	// true here to initialize our filesystem with the newly created folder
-    FS.syncfs(true, function(err) {
-  	   assert(!err);
-       console.log('IDBFS initialized.')
-    });
-  );
-}
-
 EMSCRIPTEN_BINDINGS(my_module) {
-    emscripten::function("print_file", &print_file);
-    emscripten::function("initialize_idbfs", &initialize_idbfs);
-    emscripten::function("process_appendix", &create_print);
     emscripten::function("cv_range", &cv_range);
     emscripten::function("cv_blur", &cv_blur);
     emscripten::function("cv_threshold", &cv_threshold);
