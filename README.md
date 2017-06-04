@@ -25,7 +25,7 @@ Forked from [opencvjs](https://github.com/ucisysarch/opencvjs).
   ```
 4. Add the compiled javascript module to your ´.html´ file.
 
-´´´
+```
   <script type='text/javascript'>
     var Module = {
       preRun: [],
@@ -33,7 +33,7 @@ Forked from [opencvjs](https://github.com/ucisysarch/opencvjs).
     };
   </script>
   <script async src='example.js'></script>
-´´´
+```
 
 ### ToDos:
 * Skip the building of OpenCV once it has already been built or allow path specification?
