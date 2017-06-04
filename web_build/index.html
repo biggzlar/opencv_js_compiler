@@ -53,9 +53,9 @@
 						<input type='file' id='input' name='file' /><br>
 						<input id='photo_capture' type='button' value='capture' /><br><br>
 						<p>OpenCV Methods</p>
-						<input type='button' value='threshold' onclick='canvas_operation(Module.cv_threshold)' /><br>
-						<input type='button' value='blur' onclick='canvas_operation(Module.cv_blur);' /><br>
-						<input type='button' value='color range' onclick='canvas_operation(Module.cv_range);' /><br><br><br>
+						<input type='button' value='threshold' onclick='canvas_operation(Module._cv_threshold)' /><br>
+						<input type='button' value='blur' onclick='canvas_operation(Module._cv_blur);' /><br>
+						<input type='button' value='color range' onclick='canvas_operation(Module._cv_range);' /><br><br><br>
 					</div>
 				</div>
 				<div class='col-sm-4'>
@@ -81,6 +81,18 @@
 		<script async src='cv.js'></script>
 
 	  <script>
+			function _arrayToHeap(typedArray){
+	      var numBytes = typedArray.length * typedArray.BYTES_PER_ELEMENT;
+	      var ptr = Module._malloc(numBytes);
+	      var heapBytes = Module.HEAPU8.subarray(ptr, ptr + numBytes);
+	      heapBytes.set(typedArray);
+	      return heapBytes;
+	    }
+
+	    function _freeArray(heapBytes){
+	      Module._free(heapBytes.byteOffset);
+	    }
+
 			function download() {
 				var canvas = document.getElementById('canvas2');
 				var data = canvas.toDataURL('image/jpeg');
@@ -99,20 +111,17 @@
 				dst_canvas.width = dst_data.width;
 				dst_canvas.height = dst_data.height;
 
-				var cv_data = cv_image_operation(dst_data.height, dst_data.width, String(src_data.data)).split(',').map(function(item){
-					return parseInt(item, 10);
-				});
-
-				for (var i = 0; i < dst_data.data.length; i++){
-					dst_data.data[i] = cv_data[i];
-				}
-
+				// copy canvas image to Emscripten heap
+				var heap_src = _arrayToHeap(src_data.data);
+				// Perform operation on copy, no additional conversions needed, direct pointer manipulation
+				// results will be put directly into the output param.
+				cv_image_operation(src_data.height, src_data.width, heap_src.byteOffset, heap_src.byteOffset);
+				// copy output to ImageData
+			  dst_data.data.set(heap_src);
+				// free heap memory
+				_freeArray(heap_src);
+				// put image on canvas
 				dst_context.putImageData(dst_data, 0, 0);
-			}
-
-			function append_text() {
-				var text = $('#text_input').val();
-				Module.process_appendix("/persistent_dir/file.txt", text)
 			}
 
 	    function getInput() {
