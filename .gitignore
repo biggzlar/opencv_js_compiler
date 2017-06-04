@@ -5,8 +5,9 @@
 *.gif
 *.html
 !index.html
+
 cv.js
 cv.data
 dat.gui.js
 
-*.jar
+opencv/

@@ -23,6 +23,17 @@ Forked from [opencvjs](https://github.com/ucisysarch/opencvjs).
   ```
     python n_make.py example/example.cpp
   ```
+4. Add the compiled javascript module to your ´.html´ file.
+
+´´´
+  <script type='text/javascript'>
+    var Module = {
+      preRun: [],
+      postRun: []
+    };
+  </script>
+  <script async src='example.js'></script>
+´´´
 
 ### ToDos:
 * Skip the building of OpenCV once it has already been built or allow path specification?

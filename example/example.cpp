@@ -48,7 +48,7 @@ void mat_info(const cv::Mat img) {
   cout << "SIZE: " << img.cols << " * " << img.rows << endl;
   cout << "TYPE: " << type2str(img.type()) << endl;
   cout << "CHANNELS: " << img.channels() << endl;
-  cout << "---          ---" << endl;
+  cout << "--- END INFO ---" << endl;
 }
 
 extern "C"
