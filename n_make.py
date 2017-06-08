@@ -47,6 +47,14 @@ class bcolors:
     WARNING = '\033[93m'
     ENDC = '\033[0m'
 
+def print_report(file_path):
+    path, filename = os.path.splitext(file_path)
+    try:
+        file_size = os.path.getsize(file_path) / 1000000.0
+        print filename + ' created:', bcolors.OKGREEN + str(os.path.exists(file_path)) + bcolors.ENDC
+        print file_size, 'mb', '\n'
+    except:
+        print filename + ' created:', bcolors.WARNING + str(os.path.exists(file_path)) + bcolors.ENDC
 
 def success(text):
     return bcolors.OKGREEN + text + bcolors.ENDC
@@ -223,18 +231,15 @@ try:
 
     opencv = os.path.join(js_build_path, 'cv.html')
     data = os.path.join('..', '..', 'build', 'cv.data')
-
     tests = os.path.join('..', '..', 'test')
 
     emscripten.Building.emcc('linked_input.bc', emcc_args, opencv)
 
     stage('Report')
-    print 'js created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.js'))))
-    print os.path.getsize(os.path.join(js_build_path, 'cv.js')) / 1000000.0, 'mb', '\n'
-    print 'html created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.html'))))
-    print os.path.getsize(os.path.join(js_build_path, 'cv.html')) / 1000000.0, 'mb', '\n'
-    print 'data created:', success(str(os.path.exists(os.path.join(js_build_path, 'cv.data'))))
-    print os.path.getsize(os.path.join(js_build_path, 'cv.data')) / 1000000.0, 'mb', '\n'
+    print_report(os.path.join(js_build_path, 'cv.js'))
+    print_report(os.path.join(js_build_path, 'cv.html'))
+    print_report(os.path.join(js_build_path, 'cv.data'))
+    print
     print success('... success!')
 
 finally:
